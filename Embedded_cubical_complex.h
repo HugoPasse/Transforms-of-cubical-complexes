@@ -19,10 +19,6 @@
 #ifndef EMBEDDED_CUBICAL_COMPLEX_H_
 #define EMBEDDED_CUBICAL_COMPLEX_H_
 
-namespace Gudhi{
-
-namespace cubical_complex{
-
 template <typename T>
 void print_vector(std::vector<T> vect){
     if(vect.size() == 0){
@@ -436,7 +432,6 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
         double compute_hybrid_transform(double (*kernel)(double), std::vector<double> e){
             int index = get_vector_index(e);
             int reverse_vector = 1;
-
             //As multiplicity values are stored assuming that the last coordinate of direction is > 0, potentialy change index and set reverse_vector to -1
             if(index >= (int)critical_vertices.size()){
                 reverse_vector = -1;
@@ -532,9 +527,5 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
             promiseObj.set_value(results);
         }
 };
-
-}   //namespace cubical_complex
-
-}   //namespace Gudhi
 
 #endif
