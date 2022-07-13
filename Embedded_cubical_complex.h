@@ -1,20 +1,10 @@
-/* This file is part of the Gudhi Library - https://gudhi.inria.fr/ -
-*  which is released under MIT.
-*  See file LICENSE or go to https://gudhi.inria.fr/licensing/ for full
-*  license details.
-*  Author(s):       Hugo Passe
-*
-*  Copyright (C) 2022 Inria
-*
-*  Modification(s):
-*    - YYYY/MM Author: Description of the modification
-*/
-
 #include <gudhi/Bitmap_cubical_complex.h>
 
 #include <future>
 #include <thread>
 #include <chrono>
+
+#include "Radon_transform.h"
 
 #ifndef EMBEDDED_CUBICAL_COMPLEX_H_
 #define EMBEDDED_CUBICAL_COMPLEX_H_
@@ -154,8 +144,10 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
 
                 int job = 0;
                 while(job < num_jobs){
+                    //Getting thread response and appending it to the corresponding vectors
                     if(future_vect[job].wait_for(zero_sec) == std::future_status::ready){
                         std::vector<std::vector<int>> thread_res = future_vect[job].get();
+
                         critical_vertices[index].insert(critical_vertices[index].end(), thread_res[0].begin(), thread_res[0].end());
                         critical_multiplicity[index].insert(critical_multiplicity[index].end(), thread_res[1].begin(), thread_res[1].end());
                         zero_measure_critical_vertices[index].insert(zero_measure_critical_vertices[index].end(), thread_res[2].begin(), thread_res[2].end());
@@ -426,9 +418,10 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
         }
 
         //*********************************************//
-        //Functions to compute hybrid transform, needs a functions to compute kernel's antiderivative (abusevely called kernel) and a direction vector e
+        //Functions to compute hybrid transform
         //*********************************************//
         
+        //Compute hybrid transform of the complex in direction e, kernel is the antiderivative of the real kernel of the transform
         double compute_hybrid_transform(double (*kernel)(double), std::vector<double> e){
             int index = get_vector_index(e);
             int reverse_vector = 1;
@@ -499,7 +492,7 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
             return results;
         }
 
-        //This overload is made for python wrapping
+        //This overload is made for python wrapping, replacing a pointer to a function by an integer
         std::vector<double> compute_hybrid_transform(int kernel_number, std::vector<std::vector<double>> vect_list, unsigned int num_threads = -1){
             double (*kernel)(double);
             switch(kernel_number){
@@ -518,7 +511,7 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
             return compute_hybrid_transform(kernel, vect_list, num_threads);
         }
 
-        //Computing multiple transforms on one kernel, used by previous function
+        //Computing multiple transforms on one kernel, used by previous function, each thread ran by 'compute_hybrid_transform' is going to run an instance of this function
         void compute_hybrid_transform_subvector(std::promise<std::vector<double>> promiseObj, double (*kernel)(double), std::vector<std::vector<double>> vect_list, std::size_t begin_index, std::size_t end_index){
             std::vector<double> results;
             for(std::size_t i = begin_index; i < end_index; i++){
@@ -526,6 +519,119 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
             }
             promiseObj.set_value(results);
         }
+
+        //*********************************************//
+        //Functions to compute radon transform
+        //*********************************************//
+        
+        Radon_transform compute_radon_transform(std::vector<double> direction){
+            std::vector<double> _T;
+            std::vector<double> _Values;
+
+            std::vector<double> _singular_T;
+            std::vector<double> _singular_values;
+
+            int index = get_vector_index(direction);
+            int reverse_multiplicity = -1;
+
+            if(index >= (int)critical_vertices.size()){
+                reverse_multiplicity = -1;
+                index = (1 << direction.size()) - 1 - index;
+            }
+
+            std::vector<double> scalar_pdt;
+            std::vector<double> singular_scalar_pdt;
+
+            std::vector<std::size_t> indices;
+            std::vector<std::size_t> singular_indices;
+            
+            //Computing scalar products with non singular critical vertices
+            for(std::size_t i = 0; i < critical_vertices[index].size(); i++){
+                scalar_pdt.push_back(std::inner_product(direction.begin(), direction.end(), embedding[embedding_index[critical_vertices[index][i]]].begin(), 0.0));
+                indices.push_back(i);
+            }
+            //Computing scalar products with singular critical vertices
+            for(std::size_t i = 0; i < zero_measure_critical_vertices[index].size(); i++){
+                singular_scalar_pdt.push_back(std::inner_product(direction.begin(), direction.end(), embedding[embedding_index[zero_measure_critical_vertices[index][i]]].begin(), 0.0));
+                singular_indices.push_back(i);
+            }
+
+            //We sort the lists of indices because we want to sort critical points by scalar product.
+            std::sort(indices.begin(), indices.end(), [&scalar_pdt](int i, int j) {return scalar_pdt[i] < scalar_pdt[j];});
+            std::sort(singular_indices.begin(), singular_indices.end(), [&singular_scalar_pdt](int i, int j) {return singular_scalar_pdt[i] < singular_scalar_pdt[j];});
+            
+            //Filling T with changing points and Values[i] = Radon(t) for all t \in [T[i],T[i+1]]
+            //Last element of values should always be 0
+            
+            std::size_t len = 0;
+            int euler_car = 0;
+            //We compute the euler caracteristic values for intervals
+            if(indices.size() > 0){ 
+                euler_car = reverse_multiplicity * critical_multiplicity[index][indices[0]];
+                _T.push_back(scalar_pdt[indices[0]]);
+                _Values.push_back(euler_car);
+                for(std::size_t i = 1; i < indices.size(); i++){        
+                    int crit_mul = reverse_multiplicity * critical_multiplicity[index][indices[i]];
+                    euler_car += crit_mul;
+                    
+                    if(std::abs(scalar_pdt[indices[i-1]] - scalar_pdt[indices[i]]) <= std::numeric_limits<double>::epsilon()){
+                        _Values[len] = _Values[len] + crit_mul;
+                    }else{
+                        _T.push_back(scalar_pdt[indices[i]]);
+                        _Values.push_back(euler_car);
+                        len++;
+                    }
+                }
+            }
+
+            //We compute the euler caracteristic at singular points
+            if(singular_indices.size() > 0){
+                len = 0;
+                _singular_T.push_back(singular_scalar_pdt[singular_indices[0]]);
+                euler_car = _Values[find_euler_car_index(_T,_singular_T[0],0,_T.size())];
+                _singular_values.push_back(euler_car - zero_measure_critical_multiplicity[index][singular_indices[0]]);
+
+                for(std::size_t i = 1; i < singular_indices.size(); i++){        
+                    int crit_mul = zero_measure_critical_multiplicity[index][singular_indices[i]];
+                    if(std::abs(singular_scalar_pdt[indices[i-1]] - singular_scalar_pdt[singular_indices[i]]) <= std::numeric_limits<double>::epsilon()){
+                        _singular_values[len] = _singular_values[len] + crit_mul;
+                    }else{
+                        _singular_T.push_back(singular_scalar_pdt[singular_indices[i]]);
+                        len++;
+                        _singular_values.push_back(_Values[find_euler_car_index(_T,_singular_T[len],0,_T.size())] - zero_measure_critical_multiplicity[index][singular_indices[len]]);
+                    }
+                }
+            }
+
+
+            Radon_transform radon_transform(_T, _Values, _singular_T, _singular_values);
+            return radon_transform;
+        }
+
+        std::size_t find_euler_car_index(std::vector<double> table, double t, std::size_t begin, std::size_t end){
+            if(end - begin <= 1){
+                return begin;
+            }else{
+                std::size_t index = (begin + end) / 2;
+                if(table[index] > t){
+                    return find_euler_car_index(table, t, begin, index);
+                }else{
+                    return find_euler_car_index(table, t, index, end);
+                }
+            }
+        }
+
+        std::vector<std::vector<double>> compute_radon_transform_python(std::vector<double> direction){
+            Radon_transform radon = compute_radon_transform(direction);
+            std::vector<std::vector<double>> result;
+
+            result.push_back(radon.T);
+            result.push_back(radon.Values);
+            result.push_back(radon.singular_T);
+            result.push_back(radon.singular_values);
+
+            return result;
+        }
 };
 
-#endif
+#endif // EMBEDDED_CUBICAL_COMPLEX_H_

@@ -5,11 +5,39 @@ from libc.math cimport exp, sin, cos
 
 import numpy as np
 
+cdef extern from "Radon_transform.h":
+    cdef cppclass Radon_transform_base "Radon_transform":
+        Radon_transform_base(vector[double] T, vector[double] Values, vector[double] singular_T, vector[double] singular_values) nogil
+        double evaluate(double t) nogil
+        vector[vector[double]] get_attributes() nogil
+
 cdef extern from "Embedded_cubical_complex_interface.h" namespace "Gudhi":
     cdef cppclass Embedded_cubical_complex_base_interface "Embedded_cubical_complex_interface<>":
         Embedded_cubical_complex_base_interface(vector[unsigned] dimensions, vector[double] top_dimensional_cells) nogil
         void compute_critical_vertices(int num_jobs) nogil
+        void print_filtration() nogil
         vector[double] compute_hybrid_transform(int kernel_num, vector[vector[double]] directions_list, int num_jobs) nogil
+        vector[vector[double]] compute_radon_transform_python(vector[double] direction) nogil
+
+
+cdef class RadonTransform:
+    cdef Radon_transform_base * this_ptr
+
+    # Fake constructor that does nothing but documenting the constructor
+    def __init__(self, T, Values, singular_T, singular_values):
+        """RadonTransform constructor.
+        DO NOT USE THIS TO CONSTRUCT RADON TRANSFORM, USE EmbeddedComplex.compute_radon_transform(direction) INSTEAD 
+        """
+    
+    # The real cython constructor
+    def __cinit__(self, T, Values, singular_T, singular_values):
+        self.this_ptr = new Radon_transform_base(T, Values, singular_T, singular_values)
+
+    def evaluate(self, t):
+        return self.this_ptr.evaluate(t)
+
+    def get_attributes(self):
+        return self.this_ptr.get_attributes()
 
 cdef class EmbeddedComplex:
 
@@ -42,10 +70,8 @@ cdef class EmbeddedComplex:
         if(kernel_name == "exp"):
             return 0
         elif(kernel_name == "cos"):
-            print("Kernel cos")
             return 1
         elif(kernel_name == "sin"):
-            print("Kernel sin")
             return 2
         return -1       
 
@@ -57,3 +83,12 @@ cdef class EmbeddedComplex:
     def compute_hybrid_transform(self, kernel_name, vector[vector[double]] directions, int num_jobs = -1):
         kernel_num = self._find_kernel(kernel_name)
         return self.this_ptr.compute_hybrid_transform(kernel_num, directions, num_jobs)
+
+    def compute_radon_transform(self, vector[double] direction):
+        tmp = self.this_ptr.compute_radon_transform_python(direction)
+        if len(tmp) == 4:
+            radon = RadonTransform(tmp[0],tmp[1],tmp[2],tmp[3])
+            return radon
+
+    def print_filtration(self):
+        self.this_ptr.print_filtration()

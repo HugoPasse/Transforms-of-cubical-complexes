@@ -36,6 +36,51 @@ def embedded_cubical_complex_from_path(path):
     cplx = ecc.EmbeddedComplex(img)
     return cplx
 
+def plot_radon_transform(embedded_complex, direction, title=None):
+    radon = cplx.compute_radon_transform(direction)
+    attributes = radon.get_attributes()
+    print(attributes)
+    if(len(attributes[0]) > 0):
+        plt.plot([-1,attributes[0][0]],[0,0],'b')
+        plt.plot([attributes[0][len(attributes[0])-1],1],[0,0],'b')
+        for i in range(len(attributes[0])-1):
+            plt.plot([attributes[0][i], attributes[0][i+1]], [attributes[1][i], attributes[1][i]], 'b')
+        for i in range(len(attributes[2])):
+            plt.plot([attributes[2][i]], [attributes[3][i]], 'b', marker='o')
+    else:
+        plt.plot([-1,1],[0,0])
+    if(title is not None):
+        plt.title(title)
+    plt.show()
+        
+
+data = np.array([[0,1,0,1,0,1],
+                 [1,0,0,1,0,0],
+                 [1,0,0,1,1,1],
+                 [0,1,0,0,0,1],
+                 [1,1,0,1,1,0],
+                 [0,0,1,0,0,0]])
+
+#data = np.array([[0,1],[1,1]])
+
+print(data.ravel())
+
+
+direction = [1,1]
+cplx = ecc.EmbeddedComplex(data)
+cplx.print_filtration()
+plot_radon_transform(cplx,direction, "Test correction")
+
+"""
+img = cv2.imread("/home/hugo/Documents/L3/S2/stage/implementation/images/27_manual1.png")
+img = np.multiply(img,-1/255)
+print("Création du complexe")
+cplx = ecc.EmbeddedComplex(img)
+
+plot_radon_transform(cplx,direction, "Radon 27 Manual")
+radon = cplx.compute_radon_transform(direction)
+
+"""
 
 """
 img = cv2.imread("/home/hugo/Documents/L3/S2/stage/implementation/images/belgian-fieldstone.png")
