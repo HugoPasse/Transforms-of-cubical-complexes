@@ -5,6 +5,7 @@
 #include <chrono>
 
 #include "Radon_transform.h"
+#include "Euler_caracteristic_transform.h"
 
 #ifndef EMBEDDED_CUBICAL_COMPLEX_H_
 #define EMBEDDED_CUBICAL_COMPLEX_H_
@@ -102,7 +103,7 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
         //Functions for critical points
         //*********************************************//
         void compute_critical_vertices(int num_jobs = 0){
-            if(num_jobs > std::thread::hardware_concurrency() || num_jobs <= 0){
+            if(num_jobs > (int)std::thread::hardware_concurrency() || num_jobs <= 0){
                 num_jobs = std::thread::hardware_concurrency();
             }
             num_jobs = std::min(num_jobs, (int)this->sizes[0]+1);    //Because at line 135, indices must designate vertices on the first line
@@ -297,12 +298,12 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
 
         void print_filtration(){
             std::cout << "Filtration : \n[";
-            int n = this->num_simplices()-1;
-            for(int i = 0; i < 2*this->sizes[1]+1; i++){
-                for(int j = 0; j < 2*this->sizes[0]+1; j++){
-                    std::cout << this->filtration(j*(2*this->sizes[0]+1)+2*this->sizes[1]-i) << ", ";
+            for(unsigned i = 0; i < 2*this->sizes[1]+1; i++){
+                std::cout << "[";
+                for(unsigned j = 0; j < 2*this->sizes[0]+1; j++){
+                    std::cout << this->filtration(i*(2*this->sizes[0]+1) + j) << ", ";
                 }
-                std::cout << "\n";
+                std::cout << "]\n";
             }
             std::cout << "]\n";
         }
@@ -415,6 +416,14 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
                 }
             }
             return 1;
+        }
+
+        int num_vertices(){
+            int num = 1;
+            for(int i=0; i<this->sizes.size(); i++){
+                num *= this->sizes[i]+1;
+            }
+            return num;
         }
 
         //*********************************************//
@@ -631,6 +640,115 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
             result.push_back(radon.singular_values);
 
             return result;
+        }
+
+        //*********************************************//
+        //Functions to compute euler caracteristic transform
+        //*********************************************//
+        std::vector<int> principal_direction(std::vector<double> v){
+            std::vector<int> pdv;
+            for(std::size_t i=0; i<v.size(); i++){
+                if(v[i] > 0){
+                    pdv.push_back(1);
+                }else{
+                    pdv.push_back(-1);
+                }
+            }
+            return pdv;
+        }
+
+        Euler_caracteristic_transform compute_ect(std::vector<double> direction){
+            std::vector<int> principal_direction_vector = principal_direction(direction);
+
+            std::vector<double> scalar_pdt;
+            std::vector<int> indices;
+
+            int k = 0;
+            for(std::size_t i=0; i<embedding_index.size(); i++){    //Computing scalar products
+                if(embedding_index[i] >= 0){
+                    scalar_pdt.push_back(std::inner_product(direction.begin(), direction.end(), embedding[embedding_index[i]].begin(), 0.0));
+                    indices.push_back(k);
+                    k++;
+                }
+            }
+            std::sort(indices.begin(), indices.end(), [&scalar_pdt](int i, int j) {return scalar_pdt[i] < scalar_pdt[j];});
+
+            int vertex = 0;
+            std::vector<int> coords(this->dimension());
+            int n_simplices = this->num_simplices();
+
+            std::vector<double> euler_car_of_vertices;
+            while(vertex < n_simplices){        //Loop on all vertices
+                euler_car_of_vertices.push_back(compute_euler_car_in_direction(vertex, principal_direction_vector, -1) + this->filtration(vertex));
+             
+                coords[0] = coords[0] + 2;
+                for(std::size_t j = 0; j < this->dimension()-1; j++){
+                    if((unsigned)coords[j] > 2*this->sizes[j]+1){
+                        coords[j] = 0;
+                        coords[j+1] = coords[j+1] + 2;
+                    }else{
+                        break;
+                    }
+                }
+                vertex = get_key_from_coordinates(coords);
+            }
+
+            std::vector<double> sorted_scalar_products;
+            std::vector<double> euler_car_accumulator;
+            sorted_scalar_products.push_back(scalar_pdt[indices[0]]);
+            euler_car_accumulator.push_back(euler_car_of_vertices[indices[0]]);       
+
+            for(int i=1; i<(int)indices.size(); i++){
+                if(std::abs(scalar_pdt[indices[i-1]] - scalar_pdt[indices[i]]) <= std::numeric_limits<double>::epsilon()){
+                    euler_car_accumulator[euler_car_accumulator.size()-1] += euler_car_of_vertices[indices[i]];
+                }else{
+                    sorted_scalar_products.push_back(scalar_pdt[indices[i]]);
+                    euler_car_accumulator.push_back(euler_car_of_vertices[indices[i]] + euler_car_accumulator[euler_car_accumulator.size()-1]);
+                }
+            }
+
+            std::vector<double> reduced_sorted_scalar_products;
+            std::vector<double> reduced_euler_car_accumulator;
+
+            //Reducing the size of the vectors.
+            if(sorted_scalar_products.size() > 0){
+                reduced_sorted_scalar_products.push_back(sorted_scalar_products[0]);
+                reduced_euler_car_accumulator.push_back(euler_car_accumulator[0]);
+
+                for(int i=1; i<(int)euler_car_accumulator.size(); i++){
+                    if(std::abs(euler_car_accumulator[i] - euler_car_accumulator[i-1]) > std::numeric_limits<double>::epsilon()){
+                        reduced_euler_car_accumulator.push_back(euler_car_accumulator[i]);
+                        reduced_sorted_scalar_products.push_back(sorted_scalar_products[i]);
+                    }
+                }
+            }
+            
+            Euler_caracteristic_transform ect(reduced_sorted_scalar_products, reduced_euler_car_accumulator);
+            return ect;
+        }
+
+        std::vector<std::vector<double>> compute_ect_python(std::vector<double> direction){
+            Euler_caracteristic_transform ect = compute_ect(direction);
+            std::vector<std::vector<double>> res;
+
+            res.push_back(ect.T);
+            res.push_back(ect.transform_values);
+
+            return res;
+        }
+
+        //TMP function
+        double compute_euler_caracteristic_of_complex(){
+            double s = 0;
+            for(Simplex_key i=0; i<this->num_simplices(); i++){
+                if(this->dimension(i) % 2 == 0){
+                    s += this->filtration(i);
+                }else{
+                    s -= this->filtration(i);
+                }
+                
+            }
+            return s;
         }
 };
 

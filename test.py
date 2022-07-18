@@ -1,4 +1,4 @@
-import embedded_cubical_complex as ecc
+import cubial_complex_transforms as ecc
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -39,7 +39,6 @@ def embedded_cubical_complex_from_path(path):
 def plot_radon_transform(embedded_complex, direction, title=None):
     radon = cplx.compute_radon_transform(direction)
     attributes = radon.get_attributes()
-    print(attributes)
     if(len(attributes[0]) > 0):
         plt.plot([-1,attributes[0][0]],[0,0],'b')
         plt.plot([attributes[0][len(attributes[0])-1],1],[0,0],'b')
@@ -52,35 +51,41 @@ def plot_radon_transform(embedded_complex, direction, title=None):
     if(title is not None):
         plt.title(title)
     plt.show()
+
+def plot_euler_caracteristic_transform(embedded_complex, direction, title=None):
+    ect = cplx.compute_euler_caracteristic_transform(direction)
+    attributes = ect.get_attributes()
+    if(len(attributes[0]) > 0):
+        plt.plot([-1,attributes[0][0]],[0,0],'b')
+        plt.plot([attributes[0][len(attributes[0])-1],1], [attributes[1][len(attributes[1])-1],attributes[1][len(attributes[1])-1]], 'b')
+        for i in range(len(attributes[0])-1):
+            plt.plot([attributes[0][i], attributes[0][i+1]], [attributes[1][i], attributes[1][i]], 'b')
+    else:
+        plt.plot([-1,1],[0,0])
+    if(title is not None):
+        plt.title(title)
+    plt.show()
         
 
-data = np.array([[0,1,0,1,0,1],
-                 [1,0,0,1,0,0],
-                 [1,0,0,1,1,1],
-                 [0,1,0,0,0,1],
-                 [1,1,0,1,1,0],
-                 [0,0,1,0,0,0]])
-
-#data = np.array([[0,1],[1,1]])
-
-print(data.ravel())
-
+"""
+data = np.array([[0,0,-1],[0,-1,0],[-1,0,0]])
 
 direction = [1,1]
 cplx = ecc.EmbeddedComplex(data)
 cplx.print_filtration()
-plot_radon_transform(cplx,direction, "Test correction")
-
+plot_euler_caracteristic_transform(cplx,direction)
 """
-img = cv2.imread("/home/hugo/Documents/L3/S2/stage/implementation/images/27_manual1.png")
-img = np.multiply(img,-1/255)
+
+direction = [1,1]
+np.set_printoptions(threshold=np.inf)
+img = cv2.imread("/home/hugo/Documents/L3/S2/stage/implementation/images/27_manual1.png",cv2.IMREAD_GRAYSCALE )
+img = np.flip(np.flip(img), 1)
+img = np.multiply(img,-1/255.0)
 print("Création du complexe")
 cplx = ecc.EmbeddedComplex(img)
 
-plot_radon_transform(cplx,direction, "Radon 27 Manual")
-radon = cplx.compute_radon_transform(direction)
-
-"""
+plot_euler_caracteristic_transform(cplx,direction, "ECT")
+print(cplx.compute_euler_caracteristic_of_complex())
 
 """
 img = cv2.imread("/home/hugo/Documents/L3/S2/stage/implementation/images/belgian-fieldstone.png")
