@@ -36,11 +36,20 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
 
         std::vector<int> sizes_pdt;                         //Products of the sizes from s_0 up to s_0*s_1*...*s_(n-2)
 
+        //Critical points for hybrid transforms (also used for radon transform)
+        int are_non_singular_vertices_computed = 0;
         std::vector<std::vector<int>> critical_vertices;
         std::vector<std::vector<int>> critical_multiplicity;
 
+        //Critical points for Radon transform
+        int are_singular_vertices_computed = 0;
         std::vector<std::vector<int>> zero_measure_critical_vertices;
         std::vector<std::vector<int>> zero_measure_critical_multiplicity;
+
+        //Points for Euler curve transform
+        int are_ect_points_computed = 0;
+        std::vector<std::vector<int>> ect_points;
+        std::vector<std::vector<int>> ect_variations;
 
         //If we have a vector e = (e_1,...,e_n), its index is the sum of the 2^i were i are the indexes such that e_i >= 0
         //If index_v = index_w they have the same critical points. The critical points are stored in critical_vertices[index]
@@ -60,27 +69,42 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
                 std::cout << "Init embedding ...\n";
                 initalize_embedding();
                 initalize_embedding_index();
+                impose_upper_star_filtration();
 
-                /*
-                std::cout << "Computing critical vertices\n";
-                if(num_jobs > std::thread::hardware_concurrency() || num_jobs <= 0){
-                    num_jobs = std::thread::hardware_concurrency();
-                }
-                compute_critical_vertices(num_jobs);*/
                 std::cout << "Cubical complex successfully created\n";
             }   
+
+        void impose_upper_star_filtration(){
+            for(Gudhi::cubical_complex::Bitmap_cubical_complex<Gudhi::cubical_complex::Bitmap_cubical_complex_base<double>>::Top_dimensional_cells_iterator it = this->top_dimensional_cells_iterator_begin(); it != this->top_dimensional_cells_iterator_end(); ++it){
+                std::vector<std::size_t> boundary = this->get_boundary_of_a_cell(*it);
+                for(std::size_t i=0; i<boundary.size(); i++){
+                    this->data[boundary[i]] = std::max(this->filtration(boundary[i]),this->filtration(*it));
+                    impose_upper_star_filtration_from_simplex(boundary[i]);
+                }
+            }
+        }
+
+        void impose_upper_star_filtration_from_simplex(Simplex_handle sh){
+            if(this->dimension(sh) > 0){
+                std::vector<std::size_t> boundary = this->get_boundary_of_a_cell(sh);
+                for(std::size_t i=0; i<boundary.size(); i++){
+                    this->data[boundary[i]] = std::max(this->filtration(boundary[i]),this->filtration(sh));
+                }
+            }
+        }
 
         //*********************************************//
         //Functions for pretratement
         //*********************************************//
 
         void initalize_embedding(){
+            int m = this->sizes[std::distance(this->sizes.begin(), std::max_element(this->sizes.begin(), this->sizes.end()))];
             for(Simplex_handle i = 0; i < this->num_simplices();i++){
                 if(this->dimension(i) == 0){
                     std::vector<int> coords = get_coordinates_in_complex(i);
                     std::vector<double> embedded_coords(coords.size());
                     for(Simplex_handle j = 0; j < coords.size(); j++){
-                        embedded_coords[j] = coords[j] / 2./ this->sizes[j] - 0.5;
+                        embedded_coords[j] = (coords[j] - (int)this->sizes[j]) / 2. / m;
                     }
                     embedding.push_back(embedded_coords);
                 }
@@ -99,84 +123,83 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
             }
         }
 
+        void init_hybrid_transform(int num_jobs=0){
+            compute_non_singular_critical_vertices(num_jobs);
+        }
+
+        void init_radon_transform(int num_jobs=0){
+            compute_non_singular_critical_vertices(num_jobs);
+            compute_singular_critical_vertices(num_jobs);
+        }
+
         //*********************************************//
         //Functions for critical points
         //*********************************************//
-        void compute_critical_vertices(int num_jobs = 0){
-            if(num_jobs > (int)std::thread::hardware_concurrency() || num_jobs <= 0){
-                num_jobs = std::thread::hardware_concurrency();
-            }
-            num_jobs = std::min(num_jobs, (int)this->sizes[0]+1);    //Because at line 135, indices must designate vertices on the first line
-            
-            int dim = this->dimension();
-            Simplex_key n = this->num_simplices();
-            std::chrono::seconds zero_sec{0};
+        void compute_non_singular_critical_vertices(int num_jobs = 0){
+                if(are_non_singular_vertices_computed == 0){
+                if(num_jobs > (int)std::thread::hardware_concurrency() || num_jobs <= 0){
+                    num_jobs = std::thread::hardware_concurrency();
+                }
+                num_jobs = std::min(num_jobs, (int)this->sizes[0]+1);    //Because at line 135, indices must designate vertices on the first line
+                
+                int dim = this->dimension();
+                Simplex_key n = this->num_simplices();
+                std::chrono::seconds zero_sec{0};
 
-            int num_vertex = 1;
-            for(std::size_t  i = 0; i < this->sizes.size(); i++){
-                num_vertex *= this->sizes[i] + 1;
-            }
-
-            std::vector<int> direction(dim,-1);
-            long unsigned int index = 0;
-
-            for(int j = 0; j < (1 << dim); j++){    //Loop on every possible critical direction 
-
-                std::vector<int> tmp;
-                critical_vertices.push_back(tmp);
-                critical_multiplicity.push_back(tmp);
-                zero_measure_critical_vertices.push_back(tmp);
-                zero_measure_critical_multiplicity.push_back(tmp);
-
-                std::vector<std::promise<std::vector<std::vector<int>>>> promise_vect;
-                std::vector<std::future<std::vector<std::vector<int>>>> future_vect;
-                std::vector<std::thread> thread_vector;
-
-                for(int i = 0; i < num_jobs; i++){
-                    std::promise<int> promiseObj;
-            
-                    promise_vect.push_back(std::promise<std::vector<std::vector<int>>>());
-                    future_vect.push_back(promise_vect[i].get_future());
-                    //Objects to get return values from the thread
-                    
-                    thread_vector.push_back(std::thread(&Embedded_cubical_complex::compute_critical_vertices_subroutine, this, std::move(promise_vect[i]), direction, dim, n, i, num_jobs));
-                    thread_vector[i].detach();  //Thread is now running concurently
+                int num_vertex = 1;
+                for(std::size_t  i = 0; i < this->sizes.size(); i++){
+                    num_vertex *= this->sizes[i] + 1;
                 }
 
-                int job = 0;
-                while(job < num_jobs){
-                    //Getting thread response and appending it to the corresponding vectors
-                    if(future_vect[job].wait_for(zero_sec) == std::future_status::ready){
-                        std::vector<std::vector<int>> thread_res = future_vect[job].get();
+                std::vector<int> direction(dim,-1);
+                long unsigned int index = 0;
 
-                        critical_vertices[index].insert(critical_vertices[index].end(), thread_res[0].begin(), thread_res[0].end());
-                        critical_multiplicity[index].insert(critical_multiplicity[index].end(), thread_res[1].begin(), thread_res[1].end());
-                        zero_measure_critical_vertices[index].insert(zero_measure_critical_vertices[index].end(), thread_res[2].begin(), thread_res[2].end());
-                        zero_measure_critical_multiplicity[index].insert(zero_measure_critical_multiplicity[index].end(), thread_res[3].begin(), thread_res[3].end());
-                        job++;
+                for(int j = 0; j < (1 << dim); j++){    //Loop on every possible critical direction 
+                    std::vector<int> tmp;
+                    critical_vertices.push_back(tmp);
+                    critical_multiplicity.push_back(tmp);
+
+                    std::vector<std::promise<std::vector<std::vector<int>>>> promise_vect;
+                    std::vector<std::future<std::vector<std::vector<int>>>> future_vect;
+                    std::vector<std::thread> thread_vector;
+
+                    for(int i = 0; i < num_jobs; i++){
+                        std::promise<int> promiseObj;
+                        promise_vect.push_back(std::promise<std::vector<std::vector<int>>>());
+                        future_vect.push_back(promise_vect[i].get_future());
+                        //Objects to get return values from the thread
+                        thread_vector.push_back(std::thread(&Embedded_cubical_complex::compute_non_singular_critical_vertices_subroutine, this, std::move(promise_vect[i]), direction, dim, n, i, num_jobs));
+                        thread_vector[i].detach();  //Thread is now running concurently
                     }
-                }
 
-                //Finding next direction vector
-                int k=0;
-                while(direction[k] == 1 && k < dim){
-                    direction[k] = -1;
-                    index -= (1u << k);
-                    k++;
+                    int job = 0;
+                    while(job < num_jobs){
+                        //Getting thread response and appending it to the corresponding vectors
+                        if(future_vect[job].wait_for(zero_sec) == std::future_status::ready){
+                            std::vector<std::vector<int>> thread_res = future_vect[job].get();
+
+                            critical_vertices[index].insert(critical_vertices[index].end(), thread_res[0].begin(), thread_res[0].end());
+                            critical_multiplicity[index].insert(critical_multiplicity[index].end(), thread_res[1].begin(), thread_res[1].end());
+                            job++;
+                        }
+                    }
+                    //Finding next direction vector
+                    int k=0;
+                    while(direction[k] == 1 && k < dim){
+                        direction[k] = -1;
+                        index -= (1u << k);
+                        k++;
+                    }
+                    direction[k] = 1;
+                    index += (1u << k);
                 }
-                direction[k] = 1;
-                index += (1u << k);
             }
+            are_non_singular_vertices_computed = 1;
         }
 
-        //This function is not yet finished, it will be used as a parallel subroutine of the previous one.
-        //Subroutine, we parallelize on the first coordinate (potentially not a good choice on a n*m complex where n < num_threads and m >> n)
-        void compute_critical_vertices_subroutine(std::promise<std::vector<std::vector<int>>> promiseObj, std::vector<int> direction, int dim, Simplex_key n_simplices, int job_index, int num_jobs){
+        void compute_non_singular_critical_vertices_subroutine(std::promise<std::vector<std::vector<int>>> promiseObj, std::vector<int> direction, int dim, Simplex_key n_simplices, int job_index, int num_jobs){
             std::vector<int> crit_subroutine;
             std::vector<int> mult_subroutine;
-
-            std::vector<int> zero_measure_crit_subroutine;
-            std::vector<int> zero_measure_mult_subroutine;
             
             std::vector<int> coords(dim,0);     //On each pass throught the loop, it will store the coordinates of the simplex
             coords[0] = 2*job_index;
@@ -191,11 +214,6 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
                 if(multiplicity != 0){                                      //If relevant we add it to the critical points
                     crit_subroutine.push_back(vertex);     
                     mult_subroutine.push_back(multiplicity);
-                //We take -filtration because euler_1 is the characteristic of the intersection so the dimension
-                //of the cells is reduced by 1, but it is not the case when the hyperplane is intersected with the point
-                }else if(this->filtration(vertex) != -euler_1){
-                    zero_measure_crit_subroutine.push_back(vertex);
-                    zero_measure_mult_subroutine.push_back(-this->filtration(vertex) - euler_1);
                 }
 
                 //Finding next vertex
@@ -217,20 +235,116 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
             std::vector<std::vector<int>> res;
             res.push_back(crit_subroutine);
             res.push_back(mult_subroutine);
-            res.push_back(zero_measure_crit_subroutine);
-            res.push_back(zero_measure_mult_subroutine);
+            promiseObj.set_value(res);
+        }
+
+        void compute_singular_critical_vertices(int num_jobs=0){
+            if(are_singular_vertices_computed == 0){
+                if(num_jobs > (int)std::thread::hardware_concurrency() || num_jobs <= 0){
+                    num_jobs = std::thread::hardware_concurrency();
+                }
+                num_jobs = std::min(num_jobs, (int)this->sizes[0]+1);
+                
+                int dim = this->dimension();
+                Simplex_key n = this->num_simplices();
+                std::chrono::seconds zero_sec{0};
+
+                int num_vertex = 1;
+                for(std::size_t  i = 0; i < this->sizes.size(); i++){
+                    num_vertex *= this->sizes[i] + 1;
+                }
+
+                std::vector<int> direction(dim,-1);
+                long unsigned int index = 0;
+
+                for(int j = 0; j < (1 << dim); j++){    //Loop on every possible critical direction 
+                    std::vector<int> tmp;
+                    zero_measure_critical_vertices.push_back(tmp);
+                    zero_measure_critical_multiplicity.push_back(tmp);
+
+                    std::vector<std::promise<std::vector<std::vector<int>>>> promise_vect;
+                    std::vector<std::future<std::vector<std::vector<int>>>> future_vect;
+                    std::vector<std::thread> thread_vector;
+
+                    for(int i = 0; i < num_jobs; i++){
+                        std::promise<int> promiseObj;
+                        promise_vect.push_back(std::promise<std::vector<std::vector<int>>>());
+                        future_vect.push_back(promise_vect[i].get_future());
+                        //Objects to get return values from the thread
+                        thread_vector.push_back(std::thread(&Embedded_cubical_complex::compute_singular_critical_vertices_subroutine, this, std::move(promise_vect[i]), direction, dim, n, i, num_jobs));
+                        thread_vector[i].detach();  //Thread is now running concurently
+                    }
+
+                    int job = 0;
+                    while(job < num_jobs){
+                        //Getting thread response and appending it to the corresponding vectors
+                        if(future_vect[job].wait_for(zero_sec) == std::future_status::ready){
+                            std::vector<std::vector<int>> thread_res = future_vect[job].get();
+
+                            zero_measure_critical_vertices[index].insert(zero_measure_critical_vertices[index].end(), thread_res[0].begin(), thread_res[0].end());
+                            zero_measure_critical_multiplicity[index].insert(zero_measure_critical_multiplicity[index].end(), thread_res[1].begin(), thread_res[1].end());
+                            job++;
+                        }
+                    }
+                    //Finding next direction vector
+                    int k=0;
+                    while(direction[k] == 1 && k < dim){
+                        direction[k] = -1;
+                        index -= (1u << k);
+                        k++;
+                    }
+                    direction[k] = 1;
+                    index += (1u << k);
+                }
+            }
+            are_singular_vertices_computed = 1;
+        }
+
+        void compute_singular_critical_vertices_subroutine(std::promise<std::vector<std::vector<int>>> promiseObj, std::vector<int> direction, int dim, Simplex_key n_simplices, int job_index, int num_jobs){
+            std::vector<int> crit_subroutine;
+            std::vector<int> mult_subroutine;
+
+            std::vector<int> coords(dim,0);     //On each pass throught the loop, it will store the coordinates of the simplex
+            coords[0] = 2*job_index;
+            Simplex_key vertex = get_key_from_coordinates(coords);   //Will store the index of the vertex
+
+            while(vertex < n_simplices){  //Loop on all vertices
+                
+                int euler_1 = compute_euler_car_in_direction(vertex,direction,1);
+                int euler_2 = compute_euler_car_in_direction(vertex,direction,-1);
+                
+               if(euler_1 == euler_2){
+                    if(this->filtration(vertex) != -euler_1){
+                        crit_subroutine.push_back(vertex);
+                        mult_subroutine.push_back(-this->filtration(vertex) - euler_1);
+                    }
+                }else if(this->filtration(vertex) != -euler_1 && this->filtration(vertex) != -euler_2){
+                    crit_subroutine.push_back(vertex);
+                    mult_subroutine.push_back(-this->filtration(vertex) - euler_1);
+                }
+
+                //Finding next vertex
+                coords[0] = coords[0] + 2*num_jobs;
+                for(int j = 0; j < dim-1; j++){  
+                    if((unsigned)coords[j] > 2*this->sizes[j]+1){
+                        if(j == 0){
+                            coords[0] = 2*job_index;
+                        }else{
+                            coords[j] = 0;
+                        }
+                        coords[j+1] = coords[j+1] + 2;
+                    }else{
+                        break;
+                    }
+                }
+                vertex = get_key_from_coordinates(coords);
+            }
+            std::vector<std::vector<int>> res;
+            res.push_back(crit_subroutine);
+            res.push_back(mult_subroutine);
             promiseObj.set_value(res);
         }
         
-        //Returns 0 if the vertex isn't critial, its multiplicity if it is.
-        //Unused function, might be deleted
-        int is_vertex_critical(Simplex_handle vertex, std::vector<int> direction){
-            int euler_1 = compute_euler_car_in_direction(vertex,direction,1);
-            int euler_2 = compute_euler_car_in_direction(vertex,direction,-1);
-
-            return euler_1 - euler_2;
-        }
-
         //Return euler car with multiplicity of the intersection between the cells in the neigbourhood of the vertex and the hyperplane orthogonal to direction in the neighbourhood of the vertex
         int compute_euler_car_in_direction(Simplex_handle vertex, std::vector<int> direction, int reverse_vector){
             int euler_car = 0;
@@ -261,10 +375,100 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
                     euler_car += this->filtration(key) * simplex_dim_sign;
                 }
             }
-
             return euler_car;
         }
 
+        void init_ect(int num_jobs=0){
+            if(are_ect_points_computed == 0){
+                if(num_jobs > (int)std::thread::hardware_concurrency() || num_jobs <= 0){
+                    num_jobs = std::thread::hardware_concurrency();
+                }
+                num_jobs = std::min(num_jobs, (int)this->sizes[0]+1);
+
+                int dimension = this->dimension();
+                int n_simplices = this->num_simplices();
+
+                std::vector<int> direction(dimension,-1);
+                int index = 0;
+                
+                for(int i = 0; i < (1 << dimension); i++){    //Loop on every possible direction
+                    std::vector<int> tmp;
+                    ect_points.push_back(tmp);
+                    ect_variations.push_back(tmp);
+
+                    std::vector<std::promise<std::vector<std::vector<int>>>> promise_vect;
+                    std::vector<std::future<std::vector<std::vector<int>>>> future_vect;
+                    std::vector<std::thread> thread_vector;
+
+                    for(int j = 0; j < num_jobs; j++){
+                        std::promise<int> promiseObj;
+                        promise_vect.push_back(std::promise<std::vector<std::vector<int>>>());
+                        future_vect.push_back(promise_vect[j].get_future());
+                        //Objects to get return values from the thread
+                        thread_vector.push_back(std::thread(&Embedded_cubical_complex::init_ect_subroutine, this, std::move(promise_vect[j]), direction, dimension, n_simplices, j, num_jobs));
+                        thread_vector[j].detach();  //Thread is now running concurently
+                    }
+                    int job = 0;
+                    std::chrono::seconds zero_sec{0};
+                    while(job < num_jobs){
+                        //Getting thread response and appending it to the corresponding vectors
+                        if(future_vect[job].wait_for(zero_sec) == std::future_status::ready){
+                            std::vector<std::vector<int>> thread_res = future_vect[job].get();
+                            ect_points[index].insert(ect_points[index].end(), thread_res[0].begin(), thread_res[0].end());
+                            ect_variations[index].insert(ect_variations[index].end(), thread_res[1].begin(), thread_res[1].end());
+                            job++;
+                        }
+                    }
+
+                    int k=0;
+                    while(direction[k] == 1 && k < dimension){
+                        direction[k] = -1;
+                        index -= (1u << k);
+                        k++;
+                    }
+                    direction[k] = 1;
+                    index += (1u << k);
+                }
+            }
+            are_ect_points_computed = 1;
+        }
+
+        void init_ect_subroutine(std::promise<std::vector<std::vector<int>>> promiseObj, std::vector<int> direction, int dim, Simplex_key n_simplices, int job_index, int num_jobs){
+            std::vector<int> coords(dim,0);
+            Simplex_key vertex = 2*job_index;
+
+            coords[0] = 2*job_index;
+
+            std::vector<int> subroutine_points;
+            std::vector<int> subroutine_variations;
+
+            while(vertex < n_simplices){        //Loop on all vertices
+                int euler_car = compute_euler_car_in_direction(vertex, direction, -1) + this->filtration(vertex);
+                if(euler_car != 0){
+                    subroutine_points.push_back(vertex);
+                    subroutine_variations.push_back(euler_car);
+                }
+                //Finding next vertex
+                coords[0] = coords[0] + 2*num_jobs;
+                for(int j = 0; j < dim-1; j++){  
+                    if((unsigned)coords[j] > 2*this->sizes[j]+1){
+                        if(j == 0){
+                            coords[0] = 2*job_index;
+                        }else{
+                            coords[j] = 0;
+                        }
+                        coords[j+1] = coords[j+1] + 2;
+                    }else{
+                        break;
+                    }
+                }
+                vertex = get_key_from_coordinates(coords);
+            }
+            std::vector<std::vector<int>> res;
+            res.push_back(subroutine_points);
+            res.push_back(subroutine_variations);
+            promiseObj.set_value(res);
+        }
 
         //*********************************************//
         //Printing functions
@@ -298,10 +502,9 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
 
         void print_filtration(){
             std::cout << "Filtration : \n[";
-            for(unsigned i = 0; i < 2*this->sizes[1]+1; i++){
-                std::cout << "[";
-                for(unsigned j = 0; j < 2*this->sizes[0]+1; j++){
-                    std::cout << this->filtration(i*(2*this->sizes[0]+1) + j) << ", ";
+            for(int i=2*this->sizes[1]; i>=0; i--){
+                for(int j=0; j<2*this->sizes[0]+1; j++){
+                    std::cout << this->filtration(j+i*(2*this->sizes[0]+1)) << ", ";
                 }
                 std::cout << "]\n";
             }
@@ -657,6 +860,7 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
             return pdv;
         }
 
+        /*
         Euler_caracteristic_transform compute_ect(std::vector<double> direction){
             std::vector<int> principal_direction_vector = principal_direction(direction);
 
@@ -725,7 +929,7 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
             
             Euler_caracteristic_transform ect(reduced_sorted_scalar_products, reduced_euler_car_accumulator);
             return ect;
-        }
+        }*/
 
         std::vector<std::vector<double>> compute_ect_python(std::vector<double> direction){
             Euler_caracteristic_transform ect = compute_ect(direction);
@@ -735,6 +939,35 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
             res.push_back(ect.transform_values);
 
             return res;
+        }
+
+        Euler_caracteristic_transform compute_ect(std::vector<double> direction){
+            int index = get_vector_index(direction);
+
+            std::vector<double> scalar_pdt;
+            std::vector<int> indices;
+
+            for(std::size_t i=0; i<ect_points[index].size(); i++){
+                scalar_pdt.push_back(std::inner_product(direction.begin(), direction.end(), embedding[embedding_index[ect_points[index][i]]].begin(), 0.0));
+                indices.push_back(i);
+            }
+            std::sort(indices.begin(), indices.end(), [&scalar_pdt](int i, int j) {return scalar_pdt[i] < scalar_pdt[j];});
+
+            std::vector<double> sorted_scalar_products;
+            std::vector<double> euler_car_accumulator;
+            sorted_scalar_products.push_back(scalar_pdt[indices[0]]);
+            euler_car_accumulator.push_back(ect_variations[index][indices[0]]);       
+
+            for(int i=1; i<(int)indices.size(); i++){
+                if(std::abs(scalar_pdt[indices[i-1]] - scalar_pdt[indices[i]]) <= std::numeric_limits<double>::epsilon()){
+                    euler_car_accumulator[euler_car_accumulator.size()-1] += ect_variations[index][indices[i]];
+                }else{
+                    sorted_scalar_products.push_back(scalar_pdt[indices[i]]);
+                    euler_car_accumulator.push_back(ect_variations[index][indices[i]] + euler_car_accumulator[euler_car_accumulator.size()-1]);
+                }
+            }
+            Euler_caracteristic_transform ect(sorted_scalar_products, euler_car_accumulator);
+            return ect;
         }
 
         //TMP function

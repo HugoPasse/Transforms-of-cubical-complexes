@@ -20,12 +20,17 @@ cdef extern from "Euler_caracteristic_transform.h":
 cdef extern from "Embedded_cubical_complex_interface.h" namespace "Gudhi":
     cdef cppclass Embedded_cubical_complex_base_interface "Embedded_cubical_complex_interface<>":
         Embedded_cubical_complex_base_interface(vector[unsigned] dimensions, vector[double] top_dimensional_cells) nogil
-        void compute_critical_vertices(int num_jobs) nogil
-        void print_filtration() nogil
+        void init_hybrid_transform(int num_jobs) nogil
+        void init_radon_transform(int num_jobs) nogil
+        void init_ect(int num_jobs) nogil
         vector[double] compute_hybrid_transform(int kernel_num, vector[vector[double]] directions_list, int num_jobs) nogil
         vector[vector[double]] compute_radon_transform_python(vector[double] direction) nogil
         vector[vector[double]] compute_ect_python(vector[double] direction) nogil
         double compute_euler_caracteristic_of_complex() nogil
+        void print_filtration() nogil
+        void print_critical_vertices() nogil
+        void print_critical_multiplicity() nogil
+        void print_embedding() nogil
 
 cdef class RadonTransform:
     cdef Radon_transform_base * this_ptr
@@ -84,7 +89,7 @@ cdef class EmbeddedComplex:
     def __cinit__(self, top_dimensional_cells=None, dimensions=None, int num_jobs=0):
         if(top_dimensional_cells is not None):
             if(type(top_dimensional_cells) is np.ndarray):
-                self._construct_from_cells(top_dimensional_cells.shape, top_dimensional_cells.ravel(), num_jobs)
+                self._construct_from_cells(top_dimensional_cells.shape[::-1], top_dimensional_cells.ravel(), num_jobs)
             elif(dimensions is not None):
                 self._construct_from_cells(dimensions, top_dimensional_cells, num_jobs)            
 
@@ -104,7 +109,6 @@ cdef class EmbeddedComplex:
     def _construct_from_cells(self, vector[unsigned] dimensions, vector[double] top_dimensional_cells, int num_jobs):
         with nogil:
             self.this_ptr = new Embedded_cubical_complex_base_interface(dimensions, top_dimensional_cells)
-            self.this_ptr.compute_critical_vertices(num_jobs)
 
     def compute_hybrid_transform(self, kernel_name, vector[vector[double]] directions, int num_jobs = -1):
         kernel_num = self._find_kernel(kernel_name)
@@ -120,8 +124,17 @@ cdef class EmbeddedComplex:
         ect = EulerCaracteristicTransform(tmp[0],tmp[1])
         return ect
 
+    def compute_euler_caracteristic_of_complex(self):
+        return self.this_ptr.compute_euler_caracteristic_of_complex()
+
     def print_filtration(self):
         self.this_ptr.print_filtration()
 
-    def compute_euler_caracteristic_of_complex(self):
-        return self.this_ptr.compute_euler_caracteristic_of_complex()
+    def print_critical_vertices(self):
+        self.this_ptr.print_critical_vertices()
+
+    def print_critical_multiplicity(self):
+        self.this_ptr.print_critical_multiplicity()
+
+    def print_embedding(self):
+        self.this_ptr.print_embedding();
