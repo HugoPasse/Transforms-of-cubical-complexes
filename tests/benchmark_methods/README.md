@@ -12,7 +12,9 @@ g++ -pthread benchmarking.cpp -o program_name
 
 ## **Usage**
 Once you've compiled the program you can use it with the following arguments :
+
 ./program_name b n s<sub>0</sub> s<sub>1</sub> ... s<sub>n-1</sub> r p k m 
+
 **Arguments :**
 - b : if zero, runs all the methods on one core, if 1 runs the critical points method with 1,2,3... cores up to the number of cores that you have.
 - n : the dimension of the complexes.
