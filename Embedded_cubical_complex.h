@@ -503,7 +503,7 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
         void print_filtration(){
             std::cout << "Filtration : \n[";
             for(int i=2*this->sizes[1]; i>=0; i--){
-                for(int j=0; j<2*this->sizes[0]+1; j++){
+                for(int j=0; j<(int)(2*this->sizes[0]+1); j++){
                     std::cout << this->filtration(j+i*(2*this->sizes[0]+1)) << ", ";
                 }
                 std::cout << "]\n";
