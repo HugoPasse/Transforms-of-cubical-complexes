@@ -110,6 +110,15 @@ cdef class EmbeddedComplex:
         with nogil:
             self.this_ptr = new Embedded_cubical_complex_base_interface(dimensions, top_dimensional_cells)
 
+    def init_hybrid_transform(self,int num_jobs=0):
+        self.this_ptr.init_hybrid_transform(num_jobs)
+    
+    def init_radon_transform(self,int num_jobs=0):
+        self.this_ptr.init_radon_transform(num_jobs)
+    
+    def init_ect(self,int num_jobs=0):
+        self.this_ptr.init_ect(num_jobs)
+
     def compute_hybrid_transform(self, kernel_name, vector[vector[double]] directions, int num_jobs = -1):
         kernel_num = self._find_kernel(kernel_name)
         return self.this_ptr.compute_hybrid_transform(kernel_num, directions, num_jobs)
