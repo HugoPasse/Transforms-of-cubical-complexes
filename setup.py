@@ -9,6 +9,6 @@ setup(ext_modules = cythonize(Extension(
         "embedded_cubical_complex",
         sources=["embedded_cubical_complex.pyx"],
         language="c++",
-        library_dirs = libs,
+        include_dirs = libs,
         extra_compile_args=["-std=c++2a"]
 )))
