@@ -1,6 +1,6 @@
 # Transforms-of-cubical-complexes
 
-Code in this repository implements algorithms to compute hybrid transforms, Radon transform and Euler characteristic transform on cubical complexes. The 
+Code in this repository implements algorithms to compute hybrid transforms, Radon transform and Euler characteristic transform on cubical complexes. You have two choices, you can use the file `Embedded_cubical_complex.h` as a header file in a C++ program, or you can compile the python module to use it in a python program.
 
 ## Python module compilation
 
