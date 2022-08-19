@@ -43,7 +43,7 @@ def embedded_cubical_complex_from_path(path):
     cplx = ecc.EmbeddedComplex(img)
     return cplx
 
-def plot_radon_transform(embedded_complex, direction, title=None):
+def plot_radon_transform(cplx, direction, title=None):
     radon = cplx.compute_radon_transform(direction)
     attributes = radon.get_attributes()
     print(attributes)
@@ -87,15 +87,16 @@ plt.waitforbuttonpress()
 direction = [1,1]
 np.set_printoptions(threshold=np.inf)
 #img = cv2.imread("/home/hugo/Documents/L3/S2/stage/implementation/images/belgian-fieldstone.png",cv2.IMREAD_GRAYSCALE)
-img = np.array([[0,1],[0,1],[0,1]])
+img = np.array([[0,0,0,0],[0,0,1,0],[0,1,0,1],[0,0,1,0]])
 #img = np.multiply(img,1/255.0)
 #img = np.flip(np.flip(img), 1)
 
 cplx = ecc.EmbeddedComplex(img,1)
 cplx.print_filtration()
-cplx.print_embedding()
-cplx.print_critical_vertices()
-cplx.print_critical_multiplicity()
+#cplx.print_embedding()
+#cplx.print_critical_vertices()
+#cplx.print_critical_multiplicity()
+cplx.init_radon_transform()
 plot_radon_transform(cplx,direction,"Radon")
 
 #plot_euler_caracteristic_transform(cplx, direction);

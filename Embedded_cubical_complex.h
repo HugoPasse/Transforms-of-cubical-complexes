@@ -65,13 +65,9 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
                 for(Simplex_handle i = 1; i < this->dimension()-1; i++){
                     sizes_pdt.push_back(sizes_pdt[i-1]*(2*this->sizes[i]+1));
                 }
-
-                std::cout << "Init embedding ...\n";
                 initalize_embedding();
                 initalize_embedding_index();
                 impose_upper_star_filtration();
-
-                std::cout << "Cubical complex successfully created\n";
             }   
 
         void impose_upper_star_filtration(){
@@ -320,7 +316,7 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
                     }
                 }else if(this->filtration(vertex) != -euler_1 && this->filtration(vertex) != -euler_2){
                     crit_subroutine.push_back(vertex);
-                    mult_subroutine.push_back(-this->filtration(vertex) - euler_1);
+                    mult_subroutine.push_back(-this->filtration(vertex) - euler_2);
                 }
 
                 //Finding next vertex
@@ -501,14 +497,14 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
         }
 
         void print_filtration(){
-            std::cout << "Filtration : \n[";
+            std::clog << "Filtration : \n[";
             for(int i=2*this->sizes[1]; i>=0; i--){
                 for(int j=0; j<(int)(2*this->sizes[0]+1); j++){
-                    std::cout << this->filtration(j+i*(2*this->sizes[0]+1)) << ", ";
+                    std::clog << this->filtration(j+i*(2*this->sizes[0]+1)) << ", ";
                 }
-                std::cout << "]\n";
+                std::clog << "]\n";
             }
-            std::cout << "]\n";
+            std::clog << "]\n";
         }
 
         //*********************************************//
@@ -653,6 +649,10 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
 
         //An overload of previous function to support multithreading
         std::vector<double> compute_hybrid_transform(double (*kernel)(double), std::vector<std::vector<double>> vect_list, unsigned int num_threads = -1){
+            if(are_non_singular_vertices_computed == 0){
+                compute_non_singular_critical_vertices();
+            }
+
             std::vector<double> results;
             std::chrono::seconds zero_sec{0};
 
@@ -737,6 +737,13 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
         //*********************************************//
         
         Radon_transform compute_radon_transform(std::vector<double> direction){
+            if(are_singular_vertices_computed == 0){
+                compute_singular_critical_vertices();
+            }
+            if(are_non_singular_vertices_computed == 0){
+                compute_non_singular_critical_vertices();
+            }
+
             std::vector<double> _T;
             std::vector<double> _Values;
 
@@ -802,10 +809,9 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
                 _singular_T.push_back(singular_scalar_pdt[singular_indices[0]]);
                 euler_car = _Values[find_euler_car_index(_T,_singular_T[0],0,_T.size())];
                 _singular_values.push_back(euler_car - zero_measure_critical_multiplicity[index][singular_indices[0]]);
-
-                for(std::size_t i = 1; i < singular_indices.size(); i++){        
+                for(std::size_t i = 1; i < singular_indices.size(); i++){
                     int crit_mul = zero_measure_critical_multiplicity[index][singular_indices[i]];
-                    if(std::abs(singular_scalar_pdt[indices[i-1]] - singular_scalar_pdt[singular_indices[i]]) <= std::numeric_limits<double>::epsilon()){
+                    if(std::abs(singular_scalar_pdt[singular_indices[i-1]] - singular_scalar_pdt[singular_indices[i]]) <= std::numeric_limits<double>::epsilon()){
                         _singular_values[len] = _singular_values[len] + crit_mul;
                     }else{
                         _singular_T.push_back(singular_scalar_pdt[singular_indices[i]]);
@@ -814,8 +820,7 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
                     }
                 }
             }
-
-
+            
             Radon_transform radon_transform(_T, _Values, _singular_T, _singular_values);
             return radon_transform;
         }
@@ -831,6 +836,7 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
                     return find_euler_car_index(table, t, index, end);
                 }
             }
+            
         }
 
         std::vector<std::vector<double>> compute_radon_transform_python(std::vector<double> direction){

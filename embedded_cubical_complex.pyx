@@ -121,7 +121,7 @@ cdef class EmbeddedComplex:
 
     def compute_hybrid_transform(self, kernel_name, vector[vector[double]] directions, int num_jobs = -1):
         kernel_num = self._find_kernel(kernel_name)
-        return self.this_ptr.compute_hybrid_transform(kernel_num, directions, num_jobs)
+        return np.array(self.this_ptr.compute_hybrid_transform(kernel_num, directions, num_jobs))
 
     def compute_radon_transform(self, vector[double] direction):
         tmp = self.this_ptr.compute_radon_transform_python(direction)
@@ -146,4 +146,4 @@ cdef class EmbeddedComplex:
         self.this_ptr.print_critical_multiplicity()
 
     def print_embedding(self):
-        self.this_ptr.print_embedding();
+        self.this_ptr.print_embedding()

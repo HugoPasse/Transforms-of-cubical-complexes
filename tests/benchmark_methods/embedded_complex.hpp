@@ -540,14 +540,33 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
 
             double sum = 0.0;
 
+            double min_pdt = 0;
+            double max_pdt = 0;
+
             for(Simplex_handle key=0; key<this->num_simplices(); key++){               //Looping on all of the cells
                 if(this->dimension(key) > 0 && this->filtration(key) != 0){            
+                    
+                    if(is_pdt_computed[embedding_index[min_arranging[index][key]]] == 1){
+                        min_pdt = scalar_products[embedding_index[min_arranging[index][key]]];
+                    }else{
+                        min_pdt = std::inner_product(e.begin(),e.end(),embedding[embedding_index[min_arranging[index][key]]].begin(),0.0);
+                        scalar_products[embedding_index[min_arranging[index][key]]] = min_pdt;
+                        is_pdt_computed[embedding_index[min_arranging[index][key]]] = 1;
+                    }
 
-                    double min_pdt = std::inner_product(e.begin(),e.end(),embedding[embedding_index[min_arranging[index][key]]].begin(),0.0);
-                    double max_pdt = std::inner_product(e.begin(),e.end(),embedding[embedding_index[max_arranging[index][key]]].begin(),0.0);
+                    if(is_pdt_computed[embedding_index[max_arranging[index][key]]] == 1){
+                        max_pdt = scalar_products[embedding_index[max_arranging[index][key]]];
+                    }else{
+                        max_pdt = std::inner_product(e.begin(),e.end(),embedding[embedding_index[max_arranging[index][key]]].begin(),0.0);
+                        scalar_products[embedding_index[max_arranging[index][key]]] = max_pdt;
+                        is_pdt_computed[embedding_index[max_arranging[index][key]]] = 1;
+                    }
+                    
                     
                     double sgn = 1.0;     
                     if(this->get_dimension_of_a_cell(key)%2 == 0){sgn = -1.0;}
+
+                    
 
                     sum += sgn * (double)this->filtration(key) * (kernel(max_pdt) - kernel(min_pdt));    //Adding a new term to the sum                
                 }

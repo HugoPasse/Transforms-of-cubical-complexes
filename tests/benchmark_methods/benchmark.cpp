@@ -51,7 +51,7 @@ void benchmark_multithread(std::vector<unsigned> sizes, std::vector<std::vector<
     recap_params(sizes, data.size(), iterations, vector_range, filtration_range);
     std::vector<double> results_calc;
     std::vector<double> results_pre_calc;
-
+    
     int dimension = sizes.size();
     std::vector<std::vector<double>> vect_list;
     for(int i=0; i<iterations; i++){
@@ -78,7 +78,7 @@ void benchmark_multithread(std::vector<unsigned> sizes, std::vector<std::vector<
         std::cout << "Time took by pre-calculation         : " << tot0 << "ms\n";
         std::cout << "Average time took by pre-calculation : " << tot0/data.size() << "ms\n";
         std::cout << "Time took by calculation             : " << tot1 << "ms\n";
-        std::cout << "Average time took by calculation     : " << tot1/iterations << "ms\n";
+        std::cout << "Average time took by calculation     : " << tot1/(data.size()*iterations) << "ms\n";
         std::cout << "-----------------------------------------\n\n"; 
 
     }
@@ -102,7 +102,6 @@ void benchmark(std::vector<unsigned> sizes, std::vector<std::vector<double>> dat
     double tot2 = 0;
     double tot3 = 0;
     double tot4 = 0;
-    double tot5 = 0;
 
     double diff_simple_arr = 0;
     double diff_simple_crit = 0;
@@ -130,9 +129,14 @@ void benchmark(std::vector<unsigned> sizes, std::vector<std::vector<double>> dat
         crit_res_mono = cplx.compute_hybrid_transform(&std::exp, vect_list, 1);
         auto t5 = std::chrono::high_resolution_clock::now();
 
-        for(int i=0; i<simple_res.size(); i++){ //IL FAUT CALCULER UN TRUC DU TYPE ECART TYPE SINON ON VA PAS Y ARRIVER....
-            diff_simple_arr += std::abs(simple_res[i] - arrangement_res[i]);
-            diff_simple_crit += std::abs(simple_res[i] - crit_res_mono[i]);
+        for(int i=0; i<simple_res.size(); i++){
+            if(simple_res[i] != 0){
+                diff_simple_arr += std::abs(simple_res[i] - arrangement_res[i])/simple_res[i];
+                diff_simple_crit += std::abs(simple_res[i] - crit_res_mono[i])/simple_res[i];
+            }else{
+                diff_simple_arr += std::abs(arrangement_res[i]);
+                diff_simple_crit += std::abs(crit_res_mono[i]);
+            }
         }
 
         tot0 += std::chrono::duration<double, std::milli>(t1-t0).count();
@@ -158,13 +162,13 @@ void benchmark(std::vector<unsigned> sizes, std::vector<std::vector<double>> dat
     std::cout << "-----------------------------------------\n\n"; 
 
     std::cout << "Average computation times : \n";
-    std::cout << "Simple method                   : " << (tot0)/iterations << "ms\n";
-    std::cout << "Arrangements method             : " << (tot2+tot1)/iterations << "ms\n";
-    std::cout << "Critical points method          : " << (tot4+tot3)/iterations << "ms\n";
+    std::cout << "Simple method                   : " << (tot0)/(data.size()*iterations) << "ms\n";
+    std::cout << "Arrangements method             : " << (tot2+tot1)/(data.size()*iterations) << "ms\n";
+    std::cout << "Critical points method          : " << (tot4+tot3)/(data.size()*iterations) << "ms\n";
 
     std::cout << "-----------------------------------------\n\n";
-    std::cout << "Average difference simple/arrangements : " << diff_simple_arr/iterations << "\n";
-    std::cout << "Average difference simple/critical-points : " << diff_simple_crit/iterations << "\n";
+    std::cout << "Average relative difference simple/arrangements : " << diff_simple_arr/(data.size()*iterations) << "\n";
+    std::cout << "Average relative difference simple/critical-points : " << diff_simple_crit/(data.size()*iterations) << "\n";
     std::cout << "-----------------------------------------\n\n";
 }   
 
