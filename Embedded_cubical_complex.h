@@ -948,6 +948,10 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
         }
 
         Euler_caracteristic_transform compute_ect(std::vector<double> direction){
+            if(are_ect_points_computed == 0){
+                init_ect();
+            }
+
             int index = get_vector_index(direction);
 
             std::vector<double> scalar_pdt;
