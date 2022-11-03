@@ -2,7 +2,7 @@ import embedded_cubical_complex as ecc
 
 import matplotlib.pyplot as plt
 import numpy as np
-import cv2
+#import cv2
 
 from pylab import cm,imshow,colorbar,show
 
@@ -84,40 +84,20 @@ plot_2D_hybrid_transform_exp_norm(cplx, -5,5,11,-5,5,11)
 plt.waitforbuttonpress()
 """
 
+def exp_kernel(v):
+    return np.exp(v)
+
 direction = [1,1]
 np.set_printoptions(threshold=np.inf)
-#img = cv2.imread("/home/hugo/Documents/L3/S2/stage/implementation/images/belgian-fieldstone.png",cv2.IMREAD_GRAYSCALE)
-img = np.array([[0,0,0,0],[0,0,1,0],[0,1,0,1],[0,0,1,0]])
-#img = np.multiply(img,1/255.0)
-#img = np.flip(np.flip(img), 1)
+img = np.array([[0,0,5,0],[0,0,1,0],[0,1,-5,1],[0,0,1,0]])
 
 cplx = ecc.EmbeddedComplex(img,1)
-cplx.print_filtration()
-#cplx.print_embedding()
-#cplx.print_critical_vertices()
-#cplx.print_critical_multiplicity()
-cplx.init_radon_transform()
-plot_radon_transform(cplx,direction,"Radon")
 
-#plot_euler_caracteristic_transform(cplx, direction);
-#plot_2D_hybrid_transform_exp_norm(cplx,-100,100,1000,-100,100,1000, normalize=True)
-
-#plot_radon_transform(cplx,direction)
-
-"""
-img = cv2.imread("/home/hugo/Documents/L3/S2/stage/implementation/images/belgian-fieldstone.png")
-img = np.multiply(img,-1)
-cplx = ecc.EmbeddedComplex(img)
-
-start = -50
-end = 50
-num = 100
-
-x = np.linspace(start, end, num)
-directions = np.transpose([np.repeat(x, num), np.tile(x, num)])
-
-C = cplx.compute_hybrid_transform("cos",directions)
-S = cplx.compute_hybrid_transform("sin",directions)
-Z = np.transpose(np.reshape(np.add(np.square(C),np.square(S)),(num,num)))
-_2D_array_plot(Z,[start,end,start,end])
-"""
+for i in range(1000):
+    direction = np.random.rand(2)
+    # print(direction)
+    cplx.init_hybrid_transform()
+    v1 = cplx.compute_hybrid_transform("exp",[direction])
+    v2 = cplx.compute_hybrid_transform(exp_kernel,[direction])
+    if (v1[0]-v2[0])**2 > 0.001:
+        print(direction)

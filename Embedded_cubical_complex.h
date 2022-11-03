@@ -993,6 +993,19 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
             }
             return s;
         }
+
+        // Functions to get attributes
+        std::vector<int> get_critical_vertices(int index){
+            return critical_vertices[index];
+        }
+
+        std::vector<int> get_critical_multiplicity(int index){
+            return critical_multiplicity[index];
+        }
+
+        std::vector<double> get_vertex_coordinates(int index){
+            return embedding[embedding_index[index]];
+        }
 };
 
 #endif // EMBEDDED_CUBICAL_COMPLEX_H_

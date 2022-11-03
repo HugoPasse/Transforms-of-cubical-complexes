@@ -27,6 +27,10 @@ cdef extern from "Embedded_cubical_complex_interface.h" namespace "Gudhi":
         vector[vector[double]] compute_radon_transform_python(vector[double] direction) nogil
         vector[vector[double]] compute_ect_python(vector[double] direction) nogil
         double compute_euler_caracteristic_of_complex() nogil
+        int get_vector_index(vector[double] direction) nogil
+        vector[int] get_critical_vertices(int index) nogil
+        vector[int] get_critical_multiplicity(int index) nogil
+        vector[double] get_vertex_coordinates(int index) nogil
         void print_filtration() nogil
         void print_critical_vertices() nogil
         void print_critical_multiplicity() nogil
@@ -119,9 +123,23 @@ cdef class EmbeddedComplex:
     def init_ect(self,int num_jobs=0):
         self.this_ptr.init_ect(num_jobs)
 
-    def compute_hybrid_transform(self, kernel_name, vector[vector[double]] directions, int num_jobs = -1):
-        kernel_num = self._find_kernel(kernel_name)
-        return np.array(self.this_ptr.compute_hybrid_transform(kernel_num, directions, num_jobs))
+    def compute_hybrid_transform(self, kernel, vector[vector[double]] directions, int num_jobs = -1):
+        if isinstance(kernel, str):
+            kernel_num = self._find_kernel(kernel)
+            return np.array(self.this_ptr.compute_hybrid_transform(kernel_num, directions, num_jobs))
+        else:
+            R = np.zeros(directions.size())
+            for k in range(len(directions)):
+                d = directions[k]
+                S = 0
+                crit,mult = self.get_critical_vertices(d)
+                for i in range(len(crit)):
+                    v = crit[i]
+                    m = mult[i]
+                    S += m * kernel(np.dot(self.get_coordinates(v),d))
+                R[k] = S
+            return R
+
 
     def compute_radon_transform(self, vector[double] direction):
         tmp = self.this_ptr.compute_radon_transform_python(direction)
@@ -135,6 +153,13 @@ cdef class EmbeddedComplex:
 
     def compute_euler_caracteristic_of_complex(self):
         return self.this_ptr.compute_euler_caracteristic_of_complex()
+
+    def get_critical_vertices(self, vector[double] direction):
+        index = self.this_ptr.get_vector_index(direction)
+        return [self.this_ptr.get_critical_vertices(index),self.this_ptr.get_critical_multiplicity(index)]
+
+    def get_coordinates(self, int vertex):
+        return self.this_ptr.get_vertex_coordinates(vertex)
 
     def print_filtration(self):
         self.this_ptr.print_filtration()
