@@ -65,26 +65,46 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
                 for(Simplex_handle i = 1; i < this->dimension()-1; i++){
                     sizes_pdt.push_back(sizes_pdt[i-1]*(2*this->sizes[i]+1));
                 }
+                std::cout << "num simplces : " << this->num_simplices() <<std::endl;
+                std::cout << "Init embedding\n";
                 initalize_embedding();
+                std::cout << "Init embedding index\n";
                 initalize_embedding_index();
+                print_vector(embedding_index);
+                std::cout << "init upper star\n";
                 impose_upper_star_filtration();
+                std::cout << "Init over\n";
             }   
 
+        // void impose_upper_star_filtration(){
+        //     for(Simplex_handle key=0; key<this->num_simplices(); key++){
+        //         std::vector<int> cell_vertices = get_cell_vertices(key);
+        //         for(unsigned int i=0; i<cell_vertices.size(); i++){
+        //             this->data[cell_vertices[i]] = std::max(this->filtration(cell_vertices[i]),this->filtration(key));
+        //         }
+        //     }
+        // }        
+
         void impose_upper_star_filtration(){
+            std::cout << "Imposing upper star\n\n";
             for(Gudhi::cubical_complex::Bitmap_cubical_complex<Gudhi::cubical_complex::Bitmap_cubical_complex_base<double>>::Top_dimensional_cells_iterator it = this->top_dimensional_cells_iterator_begin(); it != this->top_dimensional_cells_iterator_end(); ++it){
                 std::vector<std::size_t> boundary = this->get_boundary_of_a_cell(*it);
+                std::cout << "Boundary of " << *it << std::endl;
                 for(std::size_t i=0; i<boundary.size(); i++){
-                    this->data[boundary[i]] = std::max(this->filtration(boundary[i]),this->filtration(*it));
-                    impose_upper_star_filtration_from_simplex(boundary[i]);
+                    //this->data[boundary[i]] = std::max(this->filtration(boundary[i]),this->filtration(*it));
+                    impose_upper_star_filtration_from_simplex(boundary[i],this->filtration(*it));
                 }
             }
         }
 
-        void impose_upper_star_filtration_from_simplex(Simplex_handle sh){
+        void impose_upper_star_filtration_from_simplex(Simplex_handle sh, double top_cell_filtration){
+            this->data[sh] = std::max(this->filtration(sh),top_cell_filtration);
             if(this->dimension(sh) > 0){
                 std::vector<std::size_t> boundary = this->get_boundary_of_a_cell(sh);
                 for(std::size_t i=0; i<boundary.size(); i++){
-                    this->data[boundary[i]] = std::max(this->filtration(boundary[i]),this->filtration(sh));
+                    //this->data[boundary[i]] = std::max(this->filtration(boundary[i]),this->filtration(sh));
+                    print_vector(boundary);
+                    impose_upper_star_filtration_from_simplex(boundary[i],top_cell_filtration);
                 }
             }
         }
@@ -345,6 +365,9 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
         int compute_euler_car_in_direction(Simplex_handle vertex, std::vector<int> direction, int reverse_vector){
             int euler_car = 0;
             int dim = direction.size();
+            std::cout << "Computing euler car in direction : \n";
+            print_vector(direction);
+            std::cout << "For vertex : " << vertex << " filtration : " << this->filtration(vertex) << std::endl;
 
             std::vector<int> coordinates = get_coordinates_in_complex(vertex); //This vector will successively take the coordinates of adjacent cells involved in the Euler's caracteristic calculation
             
@@ -368,9 +391,11 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
 
                 if(are_coordinates_in_complex(coordinates) == 1){   //If the cell exists, adding a term to the caracteristic
                     Simplex_key key = get_key_from_coordinates(coordinates);
+                    std::cout << "Found a neighbour : " << key << " val : " << simplex_dim_sign*this->filtration(key) <<"\n";
                     euler_car += this->filtration(key) * simplex_dim_sign;
                 }
             }
+            std::cout << "Total : " << euler_car << "\n";
             return euler_car;
         }
 
@@ -427,6 +452,12 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
                 }
             }
             are_ect_points_computed = 1;
+            std::cout << "ECT Points \n";
+            for(unsigned int i=0; i<ect_points.size(); i++){
+                print_vector(ect_points[i]);
+                print_vector(ect_variations[i]);
+                std::cout << std::endl;
+            }
         }
 
         void init_ect_subroutine(std::promise<std::vector<std::vector<int>>> promiseObj, std::vector<int> direction, int dim, Simplex_key n_simplices, int job_index, int num_jobs){
@@ -585,7 +616,6 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
 
             return cell_vertices;
         }
-
         //Given a direction vector e, return the index of the subvector that contains critical points in direction e
         //Maybe these functions must be united in a template one
         template <typename VT>
@@ -630,7 +660,7 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
         //*********************************************//
         
         //Compute hybrid transform of the complex in direction e, kernel is the antiderivative of the real kernel of the transform
-        double compute_hybrid_transform(double (*kernel)(double), std::vector<double> e){
+        double compute_hybrid_transform(double (*kernel)(double), std::vector<double> &e){
             int index = get_vector_index(e);
             int reverse_vector = 1;
             //As multiplicity values are stored assuming that the last coordinate of direction is > 0, potentialy change index and set reverse_vector to -1
@@ -648,7 +678,7 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
         }
 
         //An overload of previous function to support multithreading
-        std::vector<double> compute_hybrid_transform(double (*kernel)(double), std::vector<std::vector<double>> vect_list, unsigned int num_threads = -1){
+        std::vector<double> compute_hybrid_transform(double (*kernel)(double), std::vector<std::vector<double>> &vect_list, unsigned int num_threads = -1){
             if(are_non_singular_vertices_computed == 0){
                 compute_non_singular_critical_vertices();
             }
@@ -681,7 +711,7 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
                     end = (int)num_vectors;
                 }
                 
-                thread_vector.push_back(std::thread(&Embedded_cubical_complex::compute_hybrid_transform_subvector, this, std::move(promise_vect[i]), kernel, vect_list, begin, end));
+                thread_vector.push_back(std::thread(&Embedded_cubical_complex::compute_hybrid_transform_subvector, this, std::move(promise_vect[i]), kernel, std::ref(vect_list), begin, end));
                 thread_vector[i].detach();  //Thread is now running concurently
             }
 
@@ -705,7 +735,7 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
         }
 
         //This overload is made for python wrapping, replacing a pointer to a function by an integer
-        std::vector<double> compute_hybrid_transform(int kernel_number, std::vector<std::vector<double>> vect_list, unsigned int num_threads = -1){
+        std::vector<double> compute_hybrid_transform(int kernel_number, std::vector<std::vector<double>> &vect_list, unsigned int num_threads = -1){
             double (*kernel)(double);
             switch(kernel_number){
                 case 0:
@@ -724,7 +754,7 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
         }
 
         //Computing multiple transforms on one kernel, used by previous function, each thread ran by 'compute_hybrid_transform' is going to run an instance of this function
-        void compute_hybrid_transform_subvector(std::promise<std::vector<double>> promiseObj, double (*kernel)(double), std::vector<std::vector<double>> vect_list, std::size_t begin_index, std::size_t end_index){
+        void compute_hybrid_transform_subvector(std::promise<std::vector<double>> promiseObj, double (*kernel)(double), std::vector<std::vector<double>> &vect_list, std::size_t begin_index, std::size_t end_index){
             std::vector<double> results;
             for(std::size_t i = begin_index; i < end_index; i++){
                 results.push_back(compute_hybrid_transform(kernel,vect_list[i]));
@@ -736,7 +766,7 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
         //Functions to compute radon transform
         //*********************************************//
         
-        Radon_transform compute_radon_transform(std::vector<double> direction){
+        Radon_transform compute_radon_transform(std::vector<double> &direction){
             if(are_singular_vertices_computed == 0){
                 compute_singular_critical_vertices();
             }
@@ -825,7 +855,7 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
             return radon_transform;
         }
 
-        std::size_t find_euler_car_index(std::vector<double> table, double t, std::size_t begin, std::size_t end){
+        std::size_t find_euler_car_index(std::vector<double> &table, double t, std::size_t begin, std::size_t end){
             if(end - begin <= 1){
                 return begin;
             }else{
@@ -839,7 +869,7 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
             
         }
 
-        std::vector<std::vector<double>> compute_radon_transform_python(std::vector<double> direction){
+        std::vector<std::vector<double>> compute_radon_transform_python(std::vector<double> &direction){
             Radon_transform radon = compute_radon_transform(direction);
             std::vector<std::vector<double>> result;
 
@@ -854,7 +884,7 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
         //*********************************************//
         //Functions to compute euler caracteristic transform
         //*********************************************//
-        std::vector<int> principal_direction(std::vector<double> v){
+        std::vector<int> principal_direction(std::vector<double> &v){
             std::vector<int> pdv;
             for(std::size_t i=0; i<v.size(); i++){
                 if(v[i] > 0){
@@ -937,7 +967,7 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
             return ect;
         }*/
 
-        std::vector<std::vector<double>> compute_ect_python(std::vector<double> direction){
+        std::vector<std::vector<double>> compute_ect_python(std::vector<double> &direction){
             Euler_caracteristic_transform ect = compute_ect(direction);
             std::vector<std::vector<double>> res;
 
@@ -947,7 +977,7 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
             return res;
         }
 
-        Euler_caracteristic_transform compute_ect(std::vector<double> direction){
+        Euler_caracteristic_transform compute_ect(std::vector<double> &direction){
             if(are_ect_points_computed == 0){
                 init_ect();
             }
@@ -976,6 +1006,7 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
                     euler_car_accumulator.push_back(ect_variations[index][indices[i]] + euler_car_accumulator[euler_car_accumulator.size()-1]);
                 }
             }
+            // Passer par ref dans la classe Euler_car..
             Euler_caracteristic_transform ect(sorted_scalar_products, euler_car_accumulator);
             return ect;
         }

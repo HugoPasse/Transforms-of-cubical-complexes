@@ -6,11 +6,13 @@ public:
 	std::vector<double> T;
 	std::vector<double> transform_values;
 
+	// Passer par reference
 	Euler_caracteristic_transform(std::vector<double> sorted_scalar_products, std::vector<double> values){
 		T = sorted_scalar_products;
 		transform_values = values;
 	}
 
+	// pareil
 	std::size_t dichotomie(std::vector<double> table, double t, std::size_t begin, std::size_t end){
         if(end - begin <= 1){
             return begin;
