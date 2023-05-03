@@ -3,17 +3,50 @@ import numpy as np
 def rectangle(sizes,value):
 	return np.full(sizes,value)
 
+# def regular_points(sizes, pt_size, pt_spacing, value=1, default_value=0):
+# 	arrays = []
+# 	for i in range(len(sizes)):
+# 		arr = []
+# 		for j in range(sizes[i]):
+# 			if(j%(pt_spacing[i]+pt_size[i]) < pt_spacing[i]):
+# 				arr.append(value)
+# 			else:
+# 				arr.append(default_value)
+# 		arrays.append(np.array([arr]))
+
+# 	res = arrays[0]
+# 	for i in range(len(arrays)-1):
+# 		res = np.dot(res.T,arrays[i+1])
+# 	return res
+
+# def regular_points(sizes, pt_size, pt_spacing, value=1, default_value=0):
+# 	arrays = []
+# 	for i in range(len(sizes)):
+# 		arr = []
+# 		for j in range(sizes[i]):
+# 			if(j%(pt_spacing[i]+pt_size[i]) < pt_spacing[i]):
+# 				arr.append(value)
+# 			else:
+# 				arr.append(default_value)
+# 		arrays.append(np.array(arr))
+
+# 	res = np.full(sizes,1)
+# 	for c in np.ndindex(res.shape):
+# 		for i in range(len(c)):
+# 			res[c] *= arrays[i][c[i]]
+# 	return res
+
 def regular_points(sizes, pt_size, pt_spacing, value=1, default_value=0):
-	arr = np.full(sizes,default_value)
-	for coords in np.ndindex(sizes):
-		b = 1
-		for i in range(len(coords)):
-			if coords[i]%(pt_spacing[i]+pt_size[i]) < pt_spacing[i]:
-				b = 0
-				break
-		if b:
-			arr[coords] = 1
-	return arr
+	arrays = []
+	for i in range(len(sizes)):
+		arr = []
+		for j in range(sizes[i]):
+			if(j%(pt_spacing[i]+pt_size[i]) < pt_spacing[i]):
+				arr.append(value)
+			else:
+				arr.append(default_value)
+		arrays.append(np.array(arr))
+	return np.outer(arrays[0],arrays[1])
 
 def sphere(sizes, radius, thickness, value=1, default_value=0):
 	arr = np.full(sizes,default_value)
