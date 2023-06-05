@@ -3,6 +3,7 @@
 #include <future>
 #include <thread>
 #include <chrono>
+#include <time.h>
 
 #include "Radon_transform.h"
 #include "Euler_caracteristic_transform.h"
@@ -55,41 +56,30 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
         //If index_v = index_w they have the same critical points. The critical points are stored in critical_vertices[index]
 
         //*********************************************//
-        //Constructors
+        // Constructor
         //*********************************************//
         Embedded_cubical_complex(const std::vector<unsigned>& dimensions,
             const std::vector<Filtration_value>& top_dimensional_cells):Gudhi::cubical_complex::Bitmap_cubical_complex<T>(dimensions, top_dimensional_cells)
             {
                 sizes_pdt.push_back(2*this->sizes[0]+1);
+
                 //In this loop we compute the product of the number of cubes in each direction, it optimizes the complexity of the get_coordinates_in_complex function
-                for(Simplex_handle i = 1; i < this->dimension()-1; i++){
+                for(Simplex_handle i=1; i<this->dimension(); i++){
                     sizes_pdt.push_back(sizes_pdt[i-1]*(2*this->sizes[i]+1));
                 }
-                std::cout << "num simplces : " << this->num_simplices() <<std::endl;
-                std::cout << "Init embedding\n";
+
                 initalize_embedding();
-                std::cout << "Init embedding index\n";
                 initalize_embedding_index();
-                print_vector(embedding_index);
-                std::cout << "init upper star\n";
                 impose_upper_star_filtration();
-                std::cout << "Init over\n";
-            }   
-
-        // void impose_upper_star_filtration(){
-        //     for(Simplex_handle key=0; key<this->num_simplices(); key++){
-        //         std::vector<int> cell_vertices = get_cell_vertices(key);
-        //         for(unsigned int i=0; i<cell_vertices.size(); i++){
-        //             this->data[cell_vertices[i]] = std::max(this->filtration(cell_vertices[i]),this->filtration(key));
-        //         }
-        //     }
-        // }        
-
+            }     
+        
+        //*********************************************//
+        // Specific filtration
+        //*********************************************//
         void impose_upper_star_filtration(){
-            std::cout << "Imposing upper star\n\n";
+            // std::cout << "Imposing upper star\n\n";
             for(Gudhi::cubical_complex::Bitmap_cubical_complex<Gudhi::cubical_complex::Bitmap_cubical_complex_base<double>>::Top_dimensional_cells_iterator it = this->top_dimensional_cells_iterator_begin(); it != this->top_dimensional_cells_iterator_end(); ++it){
                 std::vector<std::size_t> boundary = this->get_boundary_of_a_cell(*it);
-                std::cout << "Boundary of " << *it << std::endl;
                 for(std::size_t i=0; i<boundary.size(); i++){
                     //this->data[boundary[i]] = std::max(this->filtration(boundary[i]),this->filtration(*it));
                     impose_upper_star_filtration_from_simplex(boundary[i],this->filtration(*it));
@@ -103,14 +93,45 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
                 std::vector<std::size_t> boundary = this->get_boundary_of_a_cell(sh);
                 for(std::size_t i=0; i<boundary.size(); i++){
                     //this->data[boundary[i]] = std::max(this->filtration(boundary[i]),this->filtration(sh));
-                    print_vector(boundary);
                     impose_upper_star_filtration_from_simplex(boundary[i],top_cell_filtration);
                 }
             }
         }
 
+        // void take_dual(){
+        //     new_num_simplices = 1;
+        //     for(int i=0; i<this->dimension(); i++){
+        //         new_num_simplices *= 2*this->sizes[i]-1;
+        //         sizes_pdt[i] = new_num_simplices;
+        //     }
+
+        //     std::vector<double> new_data(;0)
+        //     std::vector<int> coords(dim,0);
+        //     Simplex_key vertex = 0;
+
+        //     while(vertex < this->num_simplices()){        //Loop on all vertices
+                
+
+        //         //Finding next vertex
+        //         coords[0] = coords[0] + 2;
+        //         for(int j = 0; j < dim-1; j++){  
+        //             if(coords[j] > 2*this->sizes[j]+1){
+        //                 if(j == 0){
+        //                     coords[0] = 2;
+        //                 }else{
+        //                     coords[j] = 0;
+        //                 }
+        //                 coords[j+1] = coords[j+1] + 2;
+        //             }else{
+        //                 break;
+        //             }
+        //         }
+        //         vertex = get_key_from_coordinates(coords);
+        //     }
+        // }
+
         //*********************************************//
-        //Functions for pretratement
+        // Functions for pretratement
         //*********************************************//
 
         void initalize_embedding(){
@@ -132,7 +153,7 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
             for(Simplex_handle handle = 0; handle < this->num_simplices(); handle++){
                 if(this->dimension(handle) == 0){
                     embedding_index.push_back(index);
-                     index++;
+                    index++;
                 }else{
                     embedding_index.push_back(-1);
                 }
@@ -235,7 +256,7 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
                 //Finding next vertex
                 coords[0] = coords[0] + 2*num_jobs;
                 for(int j = 0; j < dim-1; j++){  
-                    if((unsigned)coords[j] > 2*this->sizes[j]+1){
+                    if(coords[j] > 2*this->sizes[j]+1){
                         if(j == 0){
                             coords[0] = 2*job_index;
                         }else{
@@ -342,7 +363,7 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
                 //Finding next vertex
                 coords[0] = coords[0] + 2*num_jobs;
                 for(int j = 0; j < dim-1; j++){  
-                    if((unsigned)coords[j] > 2*this->sizes[j]+1){
+                    if(coords[j] > 2*this->sizes[j]+1){
                         if(j == 0){
                             coords[0] = 2*job_index;
                         }else{
@@ -365,9 +386,6 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
         int compute_euler_car_in_direction(Simplex_handle vertex, std::vector<int> direction, int reverse_vector){
             int euler_car = 0;
             int dim = direction.size();
-            std::cout << "Computing euler car in direction : \n";
-            print_vector(direction);
-            std::cout << "For vertex : " << vertex << " filtration : " << this->filtration(vertex) << std::endl;
 
             std::vector<int> coordinates = get_coordinates_in_complex(vertex); //This vector will successively take the coordinates of adjacent cells involved in the Euler's caracteristic calculation
             
@@ -391,11 +409,9 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
 
                 if(are_coordinates_in_complex(coordinates) == 1){   //If the cell exists, adding a term to the caracteristic
                     Simplex_key key = get_key_from_coordinates(coordinates);
-                    std::cout << "Found a neighbour : " << key << " val : " << simplex_dim_sign*this->filtration(key) <<"\n";
                     euler_car += this->filtration(key) * simplex_dim_sign;
                 }
             }
-            std::cout << "Total : " << euler_car << "\n";
             return euler_car;
         }
 
@@ -452,12 +468,6 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
                 }
             }
             are_ect_points_computed = 1;
-            std::cout << "ECT Points \n";
-            for(unsigned int i=0; i<ect_points.size(); i++){
-                print_vector(ect_points[i]);
-                print_vector(ect_variations[i]);
-                std::cout << std::endl;
-            }
         }
 
         void init_ect_subroutine(std::promise<std::vector<std::vector<int>>> promiseObj, std::vector<int> direction, int dim, Simplex_key n_simplices, int job_index, int num_jobs){
@@ -478,7 +488,7 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
                 //Finding next vertex
                 coords[0] = coords[0] + 2*num_jobs;
                 for(int j = 0; j < dim-1; j++){  
-                    if((unsigned)coords[j] > 2*this->sizes[j]+1){
+                    if(coords[j] > 2*this->sizes[j]+1){
                         if(j == 0){
                             coords[0] = 2*job_index;
                         }else{
@@ -1025,6 +1035,14 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
             return s;
         }
 
+        int compute_sum_dimcell(){
+            int s = 0;
+            for(Simplex_key i=0; i<this->num_simplices(); i++){
+                s += this->dimension(i)+1;
+            }
+            return s;
+        }
+
         // Functions to get attributes
         std::vector<int> get_critical_vertices(int index){
             return critical_vertices[index];
@@ -1032,6 +1050,10 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
 
         std::vector<int> get_critical_multiplicity(int index){
             return critical_multiplicity[index];
+        }
+
+        std::vector<int> get_ect_points(int index){
+            return ect_points[index];
         }
 
         std::vector<double> get_vertex_coordinates(int index){
