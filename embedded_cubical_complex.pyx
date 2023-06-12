@@ -28,7 +28,7 @@ cdef extern from "Embedded_cubical_complex_interface.h" namespace "Gudhi":
         vector[vector[double]] compute_ect_python(vector[double] direction) nogil
         double compute_euler_caracteristic_of_complex() nogil
         int get_vector_index(vector[double] direction) nogil
-        vector[int] get_critical_vertices(vector[double] direction) nogil
+        vector[int] get_critical_vertices(int index) nogil
         vector[int] get_critical_multiplicity(int index) nogil
         vector[double] get_vertex_coordinates(int index) nogil
         void print_filtration() nogil
@@ -154,9 +154,11 @@ cdef class EmbeddedComplex:
     def compute_euler_caracteristic_of_complex(self):
         return self.this_ptr.compute_euler_caracteristic_of_complex()
 
-    def get_critical_vertices(self, vector[double] direction):
-        index = self.this_ptr.get_vector_index(direction)
-        return [self.this_ptr.get_critical_vertices(index),self.this_ptr.get_critical_multiplicity(index)]
+    def get_critical_vertices(self, int index):
+        return self.this_ptr.get_critical_vertices(index)
+
+    def get_critical_multiplicity(self, int index):
+        return self.this_ptr.get_critical_multiplicity(index)
 
     def get_coordinates(self, int vertex):
         return self.this_ptr.get_vertex_coordinates(vertex)
