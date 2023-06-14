@@ -132,7 +132,9 @@ cdef class EmbeddedComplex:
             for k in range(len(directions)):
                 d = directions[k]
                 S = 0
-                crit,mult = self.get_critical_vertices(d)
+                index = self.get_vector_index(d)
+                crit = self.get_critical_vertices(index)
+                mult = self.get_critical_multiplicity(index)
                 for i in range(len(crit)):
                     v = crit[i]
                     m = mult[i]
@@ -162,6 +164,15 @@ cdef class EmbeddedComplex:
 
     def get_coordinates(self, int vertex):
         return self.this_ptr.get_vertex_coordinates(vertex)
+
+    def get_vector_index(self, vector[double] v):
+        index = 0
+        i = 1
+        for c in v:
+            if c > 0:
+                index += i
+            i *= 2
+        return index
 
     def print_filtration(self):
         self.this_ptr.print_filtration()
