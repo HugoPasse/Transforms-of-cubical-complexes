@@ -16,7 +16,8 @@ def timing_our(img, directions):
 
 	# Pre-processing
 	tic = time.perf_counter()
-	cplx.init_hybrid_transform(1)
+	cplx.init_ect(1)
+	# cplx.init_hybrid_transform(1)
 	toc = time.perf_counter()
 	time_preproc = toc-tic
 
@@ -74,10 +75,11 @@ def timings_by_critical_points(n, n_crit_pts, directions, T=32, title = '', n_sa
 	T_our = np.zeros((n_samples,len(n_crit_pts),4))
 	T_dem = np.zeros((n_samples,len(n_crit_pts),4))
 	N = np.zeros(len(n_crit_pts))
-	with open('timings/timing_by_critical_points-'+ title + '-' + str(np.random.rand())+'.txt', 'a+') as file:
+	with open('timings/timing_by_critical_points-T-{}-'.format(T)+ title + '-' + str(np.random.rand())+'.txt', 'a+') as file:
 		file.write('Timing by critical points\n\n')
-		file.write('Our time: \t init cplx | pre_processing | ECT | Total\n')
-		file.write('Demeter time (T={}): \t init | complexifying | ECT | Total\n'.format(T))
+		file.write('Num directions: {}\n'.format(len(directions)))
+		file.write('Our time: \t\t\t\t init cplx \t|\t pre_processing \t|\t ECT \t|\t Total\n')
+		file.write('Demeter time (T={}): \t init \t\t|\t complexifying \t\t|\t ECT \t|\t Total\n\n'.format(T))
 		for j in range(len(n_crit_pts)):
 			print('Nbr pts critiques: %s (computing...)' %n_crit_pts[j])
 			for i in range(n_samples):
@@ -85,6 +87,7 @@ def timings_by_critical_points(n, n_crit_pts, directions, T=32, title = '', n_sa
 				img = test_shapes.regular_points((n,n),np.array([p,p]),np.array([p,p]))
 				our = timing_our(img, directions)
 				cplx, T_our[i,j,:] = our[0], our[1:]
+				cplx.init_hybrid_transform(1)
 				N[j] = len(cplx.get_critical_vertices(0))
 				file.write('Nbr critical points: {}\n'.format(N[j]))
 				file.write('Our: {}\n'.format(our[1:]))
@@ -100,11 +103,12 @@ def timings_by_size(sizes, spacings, directions, T=32, title='', n_samples=1):
 	T_our = np.zeros((n_samples, len(sizes), 4))
 	T_dem = np.zeros((n_samples, len(sizes), 4))
 	N = np.zeros(len(sizes))
-	with open('timings/timing_by_size-'+ title + '-' + str(np.random.rand())+'.txt', 'a+') as file:
+	with open('timings/timing_by_size-T-{}-'.format(T)+ title + '-' + str(np.random.rand())+'.txt', 'a+') as file:
 		file.write('Timing by size\n\n')
+		file.write('Num directions: {}\n'.format(len(directions)))
 		file.write('Sizes:' + str(sizes) + '\n\n')
-		file.write('Our time: init cplx | pre_processing | ECT | Total\n')
-		file.write('Demeter time (T={}): init | complexifying | ECT | Total\n'.format(T))
+		file.write('Our time: \t\t\t\t init cplx \t|\t pre_processing \t|\t ECT \t|\t Total\n')
+		file.write('Demeter time (T={}): \t init \t\t|\t complexifying \t\t|\t ECT \t|\t Total\n\n'.format(T))
 		for j in range(len(sizes)):
 			print('Taille de l\'image: %s (computing...)' %sizes[j])
 			p = spacings[j]
@@ -113,6 +117,7 @@ def timings_by_size(sizes, spacings, directions, T=32, title='', n_samples=1):
 				img = test_shapes.regular_points((n,n), np.array([p,p]),np.array([p,p]))
 				our = timing_our(img, directions)
 				cplx, T_our[i,j,:] = our[0], our[1:]
+				cplx.init_hybrid_transform(1)
 				N[j] = len(cplx.get_critical_vertices(0))
 				file.write('Taille de l\'image: {}\n'.format(sizes[j]))
 				file.write('Nbr critical points: {}\n'.format(N[j]))
@@ -123,14 +128,30 @@ def timings_by_size(sizes, spacings, directions, T=32, title='', n_samples=1):
 	print('Timed by sizes.')
 	return N, T_our, T_dem
 
-# %%
+#%% T = 32
+T = 32
 directions = np.random.rand(100,2)
 
-#%%
-N, T_our, T_dem = timings_by_critical_points(100, [10, 20, 30], directions)
+# Critical points
+size = 10#0
+n_crit_pts = [10, 25]#, 50, 100, 200, 500, 1000, 5000]
+N, T_our, T_dem = timings_by_critical_points(size, n_crit_pts, directions, T=T)
+
+# Sizes
+sizes = [20, 40]#
+# sizes = [20, 40, 100, 500, 1000, 5000]
+spacings = [int(size/20) for size in sizes]
+N, T_our, T_dem = timings_by_size(sizes, spacings, directions, T=T)
+
+# Critical points 
+size = 10
+# size = 1000
+# n_crit_pts = [10, 25, 50, 100, 200, 500, 1000, 5000, 10000, 50000, 100000, 500000] # size = 1000
+n_crit_pts = [10, 25]#, 50, 100, 200, 500, 1000, 5000, 10000, 50000, 100000, 500000] # size = 1000
+N, T_our, T_dem = timings_by_critical_points(size, n_crit_pts, directions, T=T)
 
 # %%
-sizes = [10**k for k in range(2, 4)]
-spacings = [int(size/20) for size in sizes]
-N, T_our, T_dem = timings_by_size(sizes, spacings, directions, T=100)
+# TODO:
+# T = [32, 100, 1000]
+# len(directions) in [50, 100, 500, 1000]
 # %%
