@@ -132,22 +132,21 @@ def timings_by_size(sizes, spacings, directions, T=32, title='', n_samples=1):
 T = 32
 directions = np.random.rand(100,2)
 
+# TODO: DONT FORGET TO SCREEN BEFORE LAUNCHING THE TASK
+
 # Critical points
-size = 10#0
-n_crit_pts = [10, 25]#, 50, 100, 200, 500, 1000, 5000]
+size = 100
+n_crit_pts = [10, 25, 50, 100, 200, 500, 1000, 5000]
 N, T_our, T_dem = timings_by_critical_points(size, n_crit_pts, directions, T=T)
 
 # Sizes
-sizes = [20, 40]#
-# sizes = [20, 40, 100, 500, 1000, 5000]
+sizes = [20, 40, 100, 500, 1000, 5000]
 spacings = [int(size/20) for size in sizes]
 N, T_our, T_dem = timings_by_size(sizes, spacings, directions, T=T)
 
 # Critical points 
-size = 10
-# size = 1000
-# n_crit_pts = [10, 25, 50, 100, 200, 500, 1000, 5000, 10000, 50000, 100000, 500000] # size = 1000
-n_crit_pts = [10, 25]#, 50, 100, 200, 500, 1000, 5000, 10000, 50000, 100000, 500000] # size = 1000
+size = 1000
+n_crit_pts = [10, 25, 50, 100, 200, 500, 1000, 5000, 10000, 50000, 100000, 500000] # size = 1000
 N, T_our, T_dem = timings_by_critical_points(size, n_crit_pts, directions, T=T)
 
 # %%
