@@ -83,7 +83,7 @@ def timings_by_critical_points(n, n_crit_pts, directions, T=32, title = '', n_sa
 		for j in range(len(n_crit_pts)):
 			print('Nbr pts critiques: %s' %n_crit_pts[j])
 			for i in range(n_samples):
-				print('Sample: {}\r'.format(i+1))
+				print('Sample: {}'.format(i+1), end='\r')
 				p = num_crit_to_spacing(n, 2, n_crit_pts[j])
 				img = test_shapes.regular_points((n,n),np.array([p,p]),np.array([p,p]))
 				our = timing_our(img, directions)
@@ -123,7 +123,7 @@ def timings_by_size(sizes, spacings, directions, T=32, title='', n_samples=1):
 			p = spacings[j]
 			n = sizes[j]
 			for i in range(n_samples):
-				print('Sample: {}\r'.format(i+1))
+				print('Sample: {}'.format(i+1), end='\r')
 				img = test_shapes.regular_points((n,n), np.array([p,p]),np.array([p,p]))
 				our = timing_our(img, directions)
 				cplx, T_our[i,j,:] = our[0], our[1:]
