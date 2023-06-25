@@ -1,13 +1,13 @@
 #%%
 import time
 import numpy as np
-
+clear_line = '\r'+' '*50+'\r'
 #%%
 import embedded_cubical_complex as ecc
 import test_shapes
 
 def timing_our(img, directions):
-	print('Timing our...', end='\r')
+	print('Timing our...', end=clear_line)
 	# Construct complex
 	tic = time.perf_counter()
 	cplx = ecc.EmbeddedComplex(img,1)
@@ -31,7 +31,7 @@ def timing_our(img, directions):
 	
 	time_total = time_cplx + time_preproc + time_ECT
 	
-	print('Done.', end='\r')
+	print('Done.', end=clear_line)
 
 	return cplx, time_cplx, time_preproc, time_ECT, time_total
 
@@ -41,7 +41,7 @@ import demeter.misc as misc
 import demeter.directions as dirs
 
 def timing_demeter(img, directions, T=32):
-	print('Timing dem...', end='\r')
+	print('Timing dem...', end=clear_line)
 	# Initializing cubical complex
 	tic = time.perf_counter()
 	cplx = euler.CubicalComplex(img)
@@ -61,115 +61,136 @@ def timing_demeter(img, directions, T=32):
 	time_ECT = toc-tic
 
 	time_total = time_init + time_complex + time_ECT
-	print('Done.', end='\r')
+	print('Done.', end=clear_line)
 	return cplx, seed, ect, time_init, time_complex, time_ECT, time_total
 
 #%%
-def num_crit_to_spacing(size, dim, ncrit):
-	p = (size/2)*((2/float(ncrit))**(1/float(dim)))
-	return int(p)
+def num_crit_to_spacing(dim, sizes, n_crit_pts):
+	spacings = np.zeros((len(sizes),len(n_crit_pts)))
+	for i, size in enumerate(sizes):
+		for j, ncrit in enumerate(n_crit_pts):
+			spacings[i,j] = (size/2)*((2/ncrit)**(1/dim))
+	return np.floor(spacings)
 
 #%%
-def timings_by_critical_points(n, n_crit_pts, directions, T=32, title = '', n_samples=1):
-	print('Timing by critical points...')
-	T_our = np.zeros((n_samples,len(n_crit_pts),4))
-	T_dem = np.zeros((n_samples,len(n_crit_pts),4))
+def timing(sizes, spacings, directions, Ts, title='', n_samples=1, time_our=True, time_dem=True, negative=False):
+	print('########### Timing ###########')
+	print('sizes:', sizes)
+	print('spacings:\n', spacings)
+	print('Nbre directions:', len(directions))
+	print('Ts (for demeter):', Ts, end='\n'+'-'*50+'\n')
+
+	overwrite_lock = str(np.random.rand())
+	path_to_savings = 'timings/timing-'+ title + '-' + overwrite_lock
+	with open(path_to_savings+'.txt', 'a+') as file:
+		file.write('###### Timing ######\n\n')
+		file.write('sizes: {}\n'.format(sizes))
+		file.write('spacings:\n{}\n'.format(spacings))
+		file.write('Nbre directions: {}\n'.format(len(directions)))
+		file.write('Ts (for demeter): {}\n\n'.format(Ts))
+		file.write('Our time: \t init cplx \t|\t pre_processing \t|\t ECT \t|\t Total\n')
+		file.write('Demeter time: \t init \t\t|\t complexifying \t\t|\t ECT \t|\t Total\n\n')
+		file.close()
+
+	T_our = np.zeros((n_samples,len(sizes),len(spacings[0]),4))
+	T_dem = np.zeros((n_samples,len(sizes),len(spacings[0]),len(Ts), 4))
 	N = np.zeros(len(n_crit_pts))
-	with open('timings/timing_by_critical_points-T-{}-'.format(T)+ title + '-' + str(np.random.rand())+'.txt', 'a+') as file:
-		file.write('Timing by critical points\n\n')
-		file.write('Num directions: {}\n'.format(len(directions)))
-		file.write('Our time: \t\t\t\t init cplx \t|\t pre_processing \t|\t ECT \t|\t Total\n')
-		file.write('Demeter time (T={}): \t init \t\t|\t complexifying \t\t|\t ECT \t|\t Total\n\n'.format(T))
-		for j in range(len(n_crit_pts)):
-			print('Nbr pts critiques: %s' %n_crit_pts[j])
-			for i in range(n_samples):
-				print('Sample: {}'.format(i+1), end='\r')
-				p = num_crit_to_spacing(n, 2, n_crit_pts[j])
-				img = test_shapes.regular_points((n,n),np.array([p,p]),np.array([p,p]))
-				our = timing_our(img, directions)
-				cplx, T_our[i,j,:] = our[0], our[1:]
-				cplx.init_hybrid_transform(1)
-				N[j] = len(cplx.get_critical_vertices(0))
-				file.write('Nbr critical points: {}\n'.format(N[j]))
-				file.write('Sample: {}\n'.format(i+1))
-				file.write('Our: {}\n'.format(our[1:]))
-				T_dem[i,j,:] = timing_demeter(img, directions, T = T)[3:]		
-				file.write('Dem: {}\n\n'.format(T_dem[i,j,:]))
-		file.write('\n\n' + '#'*20 +' Summary ' + '#'*20 + '\n\n')
-		file.write('Crit:\n')
-		file.write(str(N)+'\n')
-		file.write('Our:\n')
-		file.write(str(T_our)+'\n')
-		file.write('Dem:\n')
-		file.write(str(T_dem)+'\n')
-		file.close()
-	print('Timed by critical points.')
+	for i, size in enumerate(sizes):
+		for j in range(len(spacings[0])):
+			spacing = spacings[0,j]
+			for _ in range(n_samples):
+				print('Sample: {}'.format(_+1), end=clear_line)
+				raw_img = test_shapes.regular_points((size,size),np.array([spacing,spacing]),np.array([spacing,spacing]))
+				img = raw_img if not negative else 1-raw_img
+				with open(path_to_savings+'.txt', 'a+') as file:
+					file.write('\nSize: {}\n'.format(size))
+					file.write('Spacing: {}\n'.format(spacing))
+					file.write('Sample: {}\n'.format(_+1))
+					file.close()
+				if time_our:
+					our = timing_our(img, directions)
+					cplx, T_our[_,i,j,:] = our[0], our[1:]
+					cplx.init_hybrid_transform(1)
+					N[j] = len(cplx.get_critical_vertices(0))
+					with open(path_to_savings+'.txt', 'a+') as file:
+						file.write('Nbr critical points: {}\n'.format(N[j]))
+						file.write('Our: {}\n'.format(our[1:]))
+						file.close()
+				if time_dem:
+					for k, T in enumerate(Ts):
+						T_dem[_,i,j,k,:] = timing_demeter(img, directions, T = T)[3:]		
+						with open(path_to_savings+'.txt', 'a+') as file:
+							file.write('Dem (T={}): {}\n'.format(T, T_dem[_,i,j,k,:]))
+							file.close()
+	np.savez(path_to_savings, timings_our=T_our, timings_dem=T_dem)
+	print('########### Timed ###########')
 	return N, T_our, T_dem
+#%% Test
+# dim = 2
+# sizes = [20]
+# n_crit_pts = [10, 50]
+# spacings = num_crit_to_spacing(dim, sizes, n_crit_pts)
+# # spacings = np.array([int(size/20) for size in sizes]).reshape((1,len(sizes)))
+# n_dir = 50
+# directions = np.random.rand(n_dir, dim)
+# Ts = [5, 10]
+# title = 'test'
+# n_samples = 2
 
-#%%
-def timings_by_size(sizes, spacings, directions, T=32, title='', n_samples=1):
-	print('Timing by sizes...')
-	T_our = np.zeros((n_samples, len(sizes), 4))
-	T_dem = np.zeros((n_samples, len(sizes), 4))
-	N = np.zeros(len(sizes))
-	with open('timings/timing_by_size-T-{}-'.format(T)+ title + '-' + str(np.random.rand())+'.txt', 'a+') as file:
-		file.write('Timing by size\n\n')
-		file.write('Num directions: {}\n'.format(len(directions)))
-		file.write('Sizes:' + str(sizes) + '\n\n')
-		file.write('Our time: \t\t\t\t init cplx \t|\t pre_processing \t|\t ECT \t|\t Total\n')
-		file.write('Demeter time (T={}): \t init \t\t|\t complexifying \t\t|\t ECT \t|\t Total\n\n'.format(T))
-		for j in range(len(sizes)):
-			print('Taille de l\'image: %s' %sizes[j])
-			p = spacings[j]
-			n = sizes[j]
-			for i in range(n_samples):
-				print('Sample: {}'.format(i+1), end='\r')
-				img = test_shapes.regular_points((n,n), np.array([p,p]),np.array([p,p]))
-				our = timing_our(img, directions)
-				cplx, T_our[i,j,:] = our[0], our[1:]
-				cplx.init_hybrid_transform(1)
-				N[j] = len(cplx.get_critical_vertices(0))
-				file.write('Taille de l\'image: {}\n'.format(sizes[j]))
-				file.write('Nbr critical points: {}\n'.format(N[j]))
-				file.write('Sample: {}\n'.format(i+1))
-				file.write('Our: {}\n'.format(our[1:]))
-				T_dem[i,j,:] = timing_demeter(img, directions, T = T)[3:]
-				file.write('Dem: {}\n\n'.format(T_dem[i,j,:]))
-		file.write('\n\n' + '#'*20 +' Summary ' + '#'*20 + '\n\n')
-		file.write('Crit:\n')
-		file.write(str(N)+'\n')
-		file.write('Our:\n')
-		file.write(str(T_our)+'\n')
-		file.write('Dem:\n')
-		file.write(str(T_dem)+'\n')
-		file.close()
-	print('Timed by sizes.')
-	return N, T_our, T_dem
+# N, T_our, T_dem = timing(sizes, spacings, directions, Ts, title, n_samples, time_our=True, time_dem=True)
 
 #%% Timing
 
 # TODO: DONT FORGET TO SCREEN BEFORE LAUNCHING THE TASK
 
+dim = 2
 n_samples = 10
+n_dirs = [50, 100, 500, 1000]
 
-for T in [32, 100, 500, 1000]:
-	for n_dir in [50, 100, 500, 1000]:
-		directions = np.random.rand(n_dir,2)
-		# Critical points
-		size = 100
-		n_crit_pts = [10, 25, 50, 100, 200, 500, 1000, 5000]
-		N, T_our, T_dem = timings_by_critical_points(size, n_crit_pts, directions, T=T, n_samples=n_samples, title='n-dir-'+str(n_dir))
+# Demeter with respect to critical points and T, size = 100
+for n_dir in n_dirs:
+	title = 'critical_pts_demeter-ndir-'+str(n_dir)+'size-100'
+	sizes = [100]
+	n_crit_pts = [10, 25, 50, 100, 200, 500, 1000, 5000]
+	spacings = num_crit_to_spacing(dim, sizes, n_crit_pts)
+	directions = np.random.rand(n_dir,2)
+	Ts = [50, 100, 500, 1000]
+	N, T_our, T_dem = timing(sizes, spacings, directions, Ts, title, n_samples, time_our=False, time_dem=True)
 
-		# Sizes
-		sizes = [20, 40, 100, 500, 1000, 5000]
-		spacings = [int(size/20) for size in sizes]
-		N, T_our, T_dem = timings_by_size(sizes, spacings, directions, T=T, n_samples=n_samples, title='n-dir-'+str(n_dir))
+# Demeter with respect to critical points and T, size = 1000
+for n_dir in n_dirs:
+	title = 'critical_pts_demeter-ndir-'+str(n_dir)+'size-1000'
+	sizes = [1000]
+	n_crit_pts = [10, 25, 50, 100, 200, 500, 1000, 5000, 10000, 50000, 100000, 500000]
+	spacings = num_crit_to_spacing(dim, sizes, n_crit_pts)
+	Ts = [50, 100, 500, 1000]
+	directions = np.random.rand(n_dir,2)
+	N, T_our, T_dem = timing(sizes, spacings, directions, Ts, title, n_samples, time_our=False, time_dem=True)
 
-		# Critical points 
-		size = 1000
-		n_crit_pts = [10, 25, 50, 100, 200, 500, 1000, 5000, 10000, 50000, 100000, 500000] # size = 1000
-		N, T_our, T_dem = timings_by_critical_points(size, n_crit_pts, directions, T=T, n_samples=n_samples, title='n-dir-'+str(n_dir))
+# Demeter with respect to sizes and T, crit = 200
+for n_dir in [50, 100]:
+	title = 'size_demeter_ndir-'+str(n_dir)+'ncrit-200'
+	sizes = [20, 40, 100, 500, 1000, 5000]
+	spacings = np.array([int(size/20) for size in sizes]).reshape((1,len(sizes))) # 200 critical points
+	Ts = [50, 100, 500, 1000]
+	directions = np.random.rand(n_dir,2)
+	N, T_our, T_dem = timing(sizes, spacings, directions, Ts, title, n_samples, time_our=False, time_dem=True)
 
-# %%
+# Both with respect to critical points and T, n_dir = 1000, size = 100
+n_dir = 1000
+title = 'critical_pts_ndir-'+str(n_dir)+'size-100'
+sizes = [100]
+n_crit_pts = [10, 25, 50, 100, 200, 500, 1000, 5000]
+spacings = num_crit_to_spacing(dim, sizes, n_crit_pts)
+Ts = [32, 50, 100, 500, 1000]
+directions = np.random.rand(n_dir,2)
+N, T_our, T_dem = timing(sizes, spacings, directions, Ts, title, n_samples, time_our=True, time_dem=True)
 
-# %%
+# Both with respect to critical points and T, n_dir = 1000, size = 1000
+title = 'critical_pts_ndir-'+str(n_dir)+'size-1000'
+sizes = [1000]
+n_crit_pts = [10, 25, 50, 100, 200, 500, 1000, 5000, 10000, 50000, 100000, 500000]
+spacings = num_crit_to_spacing(dim, sizes, n_crit_pts)
+Ts = [32, 50, 100, 500, 1000]
+directions = np.random.rand(n_dir,2)
+N, T_our, T_dem = timing(sizes, spacings, directions, Ts, title, n_samples, time_our=True, time_dem=True)
