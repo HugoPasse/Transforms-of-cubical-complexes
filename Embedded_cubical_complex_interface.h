@@ -11,8 +11,8 @@ template<typename Embedded_cubical_complex_options = Gudhi::Cubical_complex::Bit
 class Embedded_cubical_complex_interface : public Embedded_cubical_complex<Embedded_cubical_complex_options>{
     public:
     Embedded_cubical_complex_interface(const std::vector<unsigned>& dimensions,
-                        const std::vector<double>& top_dimensional_cells)
-    : Embedded_cubical_complex<Embedded_cubical_complex_options>(dimensions, top_dimensional_cells) {
+                        const std::vector<double>& cells, bool input_top_cells = true)
+    : Embedded_cubical_complex<Embedded_cubical_complex_options>(dimensions, cells, input_top_cells) {
     }
 };
 

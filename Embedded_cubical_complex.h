@@ -59,7 +59,7 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
         // Constructor
         //*********************************************//
         Embedded_cubical_complex(const std::vector<unsigned>& dimensions,
-            const std::vector<Filtration_value>& top_dimensional_cells):Gudhi::cubical_complex::Bitmap_cubical_complex<T>(dimensions, top_dimensional_cells)
+            const std::vector<Filtration_value>& cells, bool input_top_cells = true):Gudhi::cubical_complex::Bitmap_cubical_complex<T>(dimensions, cells, input_top_cells)
             {
                 sizes_pdt.push_back(2*this->sizes[0]+1);
 
@@ -70,7 +70,8 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
 
                 initalize_embedding();
                 initalize_embedding_index();
-                impose_upper_star_filtration();
+                //impose_upper_star_filtration();
+
             }     
         
         //*********************************************//
@@ -256,7 +257,7 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
                 //Finding next vertex
                 coords[0] = coords[0] + 2*num_jobs;
                 for(int j = 0; j < dim-1; j++){  
-                    if(coords[j] > 2*this->sizes[j]+1){
+                    if(coords[j] > (int)(2*this->sizes[j]+1)){
                         if(j == 0){
                             coords[0] = 2*job_index;
                         }else{
@@ -363,7 +364,7 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
                 //Finding next vertex
                 coords[0] = coords[0] + 2*num_jobs;
                 for(int j = 0; j < dim-1; j++){  
-                    if(coords[j] > 2*this->sizes[j]+1){
+                    if(coords[j] > (int)(2*this->sizes[j]+1)){
                         if(j == 0){
                             coords[0] = 2*job_index;
                         }else{
@@ -488,7 +489,7 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
                 //Finding next vertex
                 coords[0] = coords[0] + 2*num_jobs;
                 for(int j = 0; j < dim-1; j++){  
-                    if(coords[j] > 2*this->sizes[j]+1){
+                    if(coords[j] > (int)(2*this->sizes[j]+1)){
                         if(j == 0){
                             coords[0] = 2*job_index;
                         }else{
@@ -993,7 +994,13 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
             }
 
             int index = get_vector_index(direction);
-
+            if(ect_points[index].size() == 0){
+                std::vector<double> tmp;
+                tmp.push_back(0);
+                Euler_caracteristic_transform ect(tmp, tmp);
+                return ect;
+            }
+            
             std::vector<double> scalar_pdt;
             std::vector<int> indices;
 
@@ -1007,7 +1014,6 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
             std::vector<double> euler_car_accumulator;
             sorted_scalar_products.push_back(scalar_pdt[indices[0]]);
             euler_car_accumulator.push_back(ect_variations[index][indices[0]]);       
-
             for(int i=1; i<(int)indices.size(); i++){
                 if(std::abs(scalar_pdt[indices[i-1]] - scalar_pdt[indices[i]]) <= std::numeric_limits<double>::epsilon()){
                     euler_car_accumulator[euler_car_accumulator.size()-1] += ect_variations[index][indices[i]];

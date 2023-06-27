@@ -2,6 +2,7 @@
 
 from libcpp.vector cimport vector
 from libc.math cimport exp, sin, cos
+from libcpp cimport bool
 
 import numpy as np
 
@@ -19,18 +20,26 @@ cdef extern from "Euler_caracteristic_transform.h":
 
 cdef extern from "Embedded_cubical_complex_interface.h" namespace "Gudhi":
     cdef cppclass Embedded_cubical_complex_base_interface "Embedded_cubical_complex_interface<>":
-        Embedded_cubical_complex_base_interface(vector[unsigned] dimensions, vector[double] top_dimensional_cells) nogil
+        Embedded_cubical_complex_base_interface(vector[unsigned] dimensions, vector[double] top_dimensional_cells, bool input_top_cells) nogil
+        void impose_lower_star_filtration() nogil
+        void impose_upper_star_filtration() nogil
+        void impose_lower_star_filtration_from_vertices() nogil
+
         void init_hybrid_transform(int num_jobs) nogil
         void init_radon_transform(int num_jobs) nogil
         void init_ect(int num_jobs) nogil
+
         vector[double] compute_hybrid_transform(int kernel_num, vector[vector[double]] directions_list, int num_jobs) nogil
         vector[vector[double]] compute_radon_transform_python(vector[double] direction) nogil
         vector[vector[double]] compute_ect_python(vector[double] direction) nogil
         double compute_euler_caracteristic_of_complex() nogil
+        
         int get_vector_index(vector[double] direction) nogil
+        
         vector[int] get_critical_vertices(int index) nogil
         vector[int] get_critical_multiplicity(int index) nogil
         vector[double] get_vertex_coordinates(int index) nogil
+        
         void print_filtration() nogil
         void print_critical_vertices() nogil
         void print_critical_multiplicity() nogil
@@ -79,7 +88,7 @@ cdef class EmbeddedComplex:
     cdef Embedded_cubical_complex_base_interface * this_ptr
 
     # Fake constructor that does nothing but documenting the constructor
-    def __init__(self, top_dimensional_cells=None, dimensions=None, int num_jobs = 0):
+    def __init__(self, top_dimensional_cells=None, dimensions=None, input_top_cells=True, int num_jobs = 0):
         """EmbeddedComplex constructor.
         :param top_dimensional_cells: The filtration values of the top dimensional cells of the cubical complex.
         :type top_dimensional_cells: list of double or numpy ndarray of double 
@@ -90,12 +99,21 @@ cdef class EmbeddedComplex:
         """
     
     # The real cython constructor
-    def __cinit__(self, top_dimensional_cells=None, dimensions=None, int num_jobs=0):
+    def __cinit__(self, top_dimensional_cells=None, dimensions=None, input_top_cells=True, int num_jobs=0):
         if(top_dimensional_cells is not None):
             if(type(top_dimensional_cells) is np.ndarray):
-                self._construct_from_cells(top_dimensional_cells.shape[::-1], top_dimensional_cells.ravel(), num_jobs)
+                self._construct_from_cells(top_dimensional_cells.shape[::-1], top_dimensional_cells.ravel(), input_top_cells, num_jobs)
             elif(dimensions is not None):
-                self._construct_from_cells(dimensions, top_dimensional_cells, num_jobs)            
+                self._construct_from_cells(dimensions, top_dimensional_cells, input_top_cells, num_jobs)            
+
+    def impose_lower_star_filtration(self):
+        self.this_ptr.impose_lower_star_filtration()
+
+    def impose_upper_star_filtration(self):
+        self.this_ptr.impose_upper_star_filtration()
+
+    def impose_lower_star_filtration_from_vertices(self):
+        self.this_ptr.impose_lower_star_filtration_from_vertices()
 
     def __dealloc__(self):
         if self.this_ptr != NULL:
@@ -110,9 +128,9 @@ cdef class EmbeddedComplex:
             return 2
         return -1       
 
-    def _construct_from_cells(self, vector[unsigned] dimensions, vector[double] top_dimensional_cells, int num_jobs):
+    def _construct_from_cells(self, vector[unsigned] dimensions, vector[double] top_dimensional_cells, bool input_top_cells, int num_jobs):
         with nogil:
-            self.this_ptr = new Embedded_cubical_complex_base_interface(dimensions, top_dimensional_cells)
+            self.this_ptr = new Embedded_cubical_complex_base_interface(dimensions, top_dimensional_cells, input_top_cells)
 
     def init_hybrid_transform(self,int num_jobs=0):
         self.this_ptr.init_hybrid_transform(num_jobs)
