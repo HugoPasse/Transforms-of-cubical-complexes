@@ -6,18 +6,25 @@ clear_line = '\r'+' '*50+'\r'
 import embedded_cubical_complex as ecc
 import test_shapes
 
-def timing_our(img, directions):
+def timing_our(img, directions, dual=False):
 	print('Timing our...', end=clear_line)
 	# Construct complex
 	tic = time.perf_counter()
-	cplx = ecc.EmbeddedComplex(img,1)
+	cplx = ecc.EmbeddedComplex(img, 1, input_top_cells=(not dual))
 	toc = time.perf_counter()
 	time_cplx = toc-tic
+	
+	# Impose upper star
+	time_ustar = 0
+	if not dual:
+		tic = time.perf_counter()
+		cplx.impose_upper_star_filtration()
+		toc = time.perf_counter()
+		time_ustar = toc-tic
 
 	# Pre-processing
 	tic = time.perf_counter()
 	cplx.init_ect(1)
-	# cplx.init_hybrid_transform(1)
 	toc = time.perf_counter()
 	time_preproc = toc-tic
 
@@ -33,7 +40,7 @@ def timing_our(img, directions):
 	
 	print('Done.', end=clear_line)
 
-	return cplx, time_cplx, time_preproc, time_ECT, time_total
+	return cplx, time_cplx, time_ustar, time_preproc, time_ECT, time_total
 
 #%%
 import demeter.euler as euler
@@ -88,11 +95,11 @@ def timing(sizes, spacings, directions, Ts, title='', n_samples=1, time_our=True
 		file.write('spacings:\n{}\n'.format(spacings))
 		file.write('Nbre directions: {}\n'.format(len(directions)))
 		file.write('Ts (for demeter): {}\n\n'.format(Ts))
-		file.write('Our time: \t init cplx \t|\t pre_processing \t|\t ECT \t|\t Total\n')
+		file.write('Our time: \t init cplx \t|\t upper_star \t|\t pre_processing \t|\t ECT \t|\t Total\n')
 		file.write('Demeter time: \t init \t\t|\t complexifying \t\t|\t ECT \t|\t Total\n\n')
 		file.close()
 
-	T_our = np.zeros((n_samples,len(sizes),len(spacings[0]),4))
+	T_our = np.zeros((n_samples,len(sizes),len(spacings[0]),5))
 	T_dem = np.zeros((n_samples,len(sizes),len(spacings[0]),len(Ts), 4))
 	N = np.zeros(len(n_crit_pts))
 	for i, size in enumerate(sizes):
@@ -126,18 +133,18 @@ def timing(sizes, spacings, directions, Ts, title='', n_samples=1, time_our=True
 	print('########### Timed ###########')
 	return N, T_our, T_dem
 #%% Test
-# dim = 2
-# sizes = [20]
-# n_crit_pts = [10, 50]
-# spacings = num_crit_to_spacing(dim, sizes, n_crit_pts)
-# # spacings = np.array([int(size/20) for size in sizes]).reshape((1,len(sizes)))
-# n_dir = 50
-# directions = np.random.rand(n_dir, dim)
-# Ts = [5, 10]
-# title = 'test'
-# n_samples = 2
+dim = 2
+sizes = [20]
+n_crit_pts = [10, 50]
+spacings = num_crit_to_spacing(dim, sizes, n_crit_pts)
+# spacings = np.array([int(size/20) for size in sizes]).reshape((1,len(sizes)))
+n_dir = 50
+directions = np.random.rand(n_dir, dim)
+Ts = [5, 10]
+title = 'test'
+n_samples = 2
 
-# N, T_our, T_dem = timing(sizes, spacings, directions, Ts, title, n_samples, time_our=True, time_dem=True)
+N, T_our, T_dem = timing(sizes, spacings, directions, Ts, title, n_samples, time_our=True, time_dem=True)
 
 #%% Timing
 
@@ -176,13 +183,13 @@ def timing(sizes, spacings, directions, Ts, title='', n_samples=1, time_our=True
 # 	directions = np.random.rand(n_dir,2)
 # 	N, T_our, T_dem = timing(sizes, spacings, directions, Ts, title, n_samples, time_our=False, time_dem=True)
 
-# # Both with respect to critical points and T, n_dir = 1000, size = 100
-# n_dir = 1000
+# Both with respect to critical points and T, n_dir = 50, size = 100
+# n_dir = 50
 # title = 'critical_pts_ndir-'+str(n_dir)+'size-100'
 # sizes = [100]
 # n_crit_pts = [10, 25, 50, 100, 200, 500, 1000, 5000]
 # spacings = num_crit_to_spacing(dim, sizes, n_crit_pts)
-# Ts = [32, 50, 100, 500, 1000]
+# Ts = [32]
 # directions = np.random.rand(n_dir,2)
 # N, T_our, T_dem = timing(sizes, spacings, directions, Ts, title, n_samples, time_our=True, time_dem=True)
 
@@ -196,90 +203,91 @@ def timing(sizes, spacings, directions, Ts, title='', n_samples=1, time_our=True
 # N, T_our, T_dem = timing(sizes, spacings, directions, Ts, title, n_samples, time_our=True, time_dem=True)
 
 # %% Fashion_MNIST
-#%%
-import tensorflow_datasets as tfds
-import matplotlib.pyplot as plt
+# #%%
+# import tensorflow_datasets as tfds
+# import matplotlib.pyplot as plt
 
-def timing_dataset(dataset, n_dir, T, num_thresholds, time_our=True, time_dem=True, stop='full'):
-	print('########### Timing dataset ###########')
-	print('Dataset:', dataset)
-	print('Stop:', stop)
-	print('Nbre directions:', n_dir)
-	print('Num_thresholds:', num_thresholds)
-	print('T (for demeter):', T)
+# def timing_dataset(dataset, n_dir, T, num_thresholds, time_our=True, time_dem=True, stop='full'):
+# 	print('########### Timing dataset ###########')
+# 	print('Dataset:', dataset)
+# 	print('Stop:', stop)
+# 	print('Nbre directions:', n_dir)
+# 	print('Num_thresholds:', num_thresholds)
+# 	print('T (for demeter):', T)
 
-	ds = tfds.as_numpy(tfds.load(dataset, split='train', shuffle_files=True, as_supervised=True))
-	directions = np.random.rand(n_dir,2)
+# 	ds = tfds.as_numpy(tfds.load(dataset, split='train', shuffle_files=True, as_supervised=True))
+# 	directions = np.random.rand(n_dir,2)
 
-	T_our = np.zeros(4)
-	T_dem = np.zeros(4)
-	crit_pts = []
+# 	T_our = np.zeros(4)
+# 	T_dem = np.zeros(4)
+# 	crit_pts = []
 	
-	quantiles = [k/(num_thresholds+1) for k in range(1,num_thresholds+1)]
+# 	quantiles = [k/(num_thresholds+1) for k in range(1,num_thresholds+1)]
 
-	overwrite_lock = str(np.random.rand())
-	path_to_savings = 'timings/timing-logs-T-{}-num_thresh-{}-ndir-{}-'.format(T,num_thresholds,n_dir)+ dataset + '-' + overwrite_lock
-	with open(path_to_savings+'.txt', 'a+') as file:
-		file.write('###### Timing ######\n\n')
-		file.write('Nbre directions: {}\n'.format(n_dir))
-		file.write('T (for demeter): {}\n\n'.format(T))
-		file.write('Our time: \t init cplx \t|\t pre_processing \t|\t ECT \t|\t Total\n')
-		file.write('Demeter time: \t init \t\t|\t complexifying \t\t|\t ECT \t|\t Total\n\n')
-		file.close()
+# 	overwrite_lock = str(np.random.rand())
+# 	path_to_savings = 'timings/timing-logs-T-{}-num_thresh-{}-ndir-{}-'.format(T,num_thresholds,n_dir)+ dataset + '-' + overwrite_lock
+# 	with open(path_to_savings+'.txt', 'a+') as file:
+# 		file.write('###### Timing ######\n\n')
+# 		file.write('Nbre directions: {}\n'.format(n_dir))
+# 		file.write('T (for demeter): {}\n\n'.format(T))
+# 		file.write('Our time: \t init cplx \t|\t pre_processing \t|\t ECT \t|\t Total\n')
+# 		file.write('Demeter time: \t init \t\t|\t complexifying \t\t|\t ECT \t|\t Total\n\n')
+# 		file.close()
 
-	for i, (img, label) in enumerate(ds):
-		img = img.reshape((img.shape[0],img.shape[1]))
-		values = np.unique(img)[1:]
-		val_quantiles = [np.quantile(values, q) for q in quantiles]
+# 	for i, (img, label) in enumerate(ds):
+# 		img = img.reshape((img.shape[0],img.shape[1]))
+# 		values = np.unique(img)[1:]
+# 		val_quantiles = [np.quantile(values, q) for q in quantiles]
 
-		with open(path_to_savings+'.txt', 'a+') as file:
-			file.write('\nIndex = {}\n'.format(i))
-			file.write('Label = {}\n'.format(label))
-		if stop=='full' or i < int(stop):
-			if time_our: 
-				img_masked = np.zeros_like(img)
-				for val_pix in val_quantiles:
-					img_masked[img>val_pix] = val_pix
-				our = timing_our(img_masked, directions)
-				cplx = our[0]
-				T_our += our[1:]
-				cplx.init_hybrid_transform(1)
-				n_crit = len(cplx.get_critical_vertices(0))
-				crit_pts.append(n_crit)
-				with open(path_to_savings+'.txt', 'a+') as file:
-					file.write('Nbr critical points: {}\n'.format(n_crit))
-					file.write('Our: {}\n'.format(our[1:]))
-					file.write('Our current total: {}\n'.format(T_our))
-					file.close()
+# 		with open(path_to_savings+'.txt', 'a+') as file:
+# 			file.write('\nIndex = {}\n'.format(i))
+# 			file.write('Label = {}\n'.format(label))
+# 		if stop=='full' or i < int(stop):
+# 			if time_our: 
+# 				img_masked = np.zeros_like(img)
+# 				for val_pix in val_quantiles:
+# 					img_masked[img>val_pix] = val_pix
+# 				our = timing_our(img_masked, directions)
+# 				cplx = our[0]
+# 				T_our += our[1:]
+# 				cplx.init_hybrid_transform(1)
+# 				n_crit = len(cplx.get_critical_vertices(0))
+# 				crit_pts.append(n_crit)
+# 				with open(path_to_savings+'.txt', 'a+') as file:
+# 					file.write('Nbr critical points: {}\n'.format(n_crit))
+# 					file.write('Our: {}\n'.format(our[1:]))
+# 					file.write('Our current total: {}\n'.format(T_our))
+# 					file.close()
 			
-			if time_dem:
-				for val_pix in val_quantiles:
-					img_masked = np.zeros_like(img)
-					img_masked[img >  val_pix] = 1
-					img_masked[img <= val_pix] = 0
-					T_dem += timing_demeter(img_masked, directions, T = T)[3:]		
-					with open(path_to_savings+'.txt', 'a+') as file:
-						file.write('Dem (T={}): {}\n'.format(T, T_dem))
-						file.close()
-		else:
-			break
+# 			if time_dem:
+# 				for val_pix in val_quantiles:
+# 					img_masked = np.zeros_like(img)
+# 					img_masked[img >  val_pix] = 1
+# 					img_masked[img <= val_pix] = 0
+# 					T_dem += timing_demeter(img_masked, directions, T = T)[3:]		
+# 					with open(path_to_savings+'.txt', 'a+') as file:
+# 						file.write('Dem (T={}): {}\n'.format(T, T_dem))
+# 						file.close()
+# 		else:
+# 			break
 
-	np.savez(path_to_savings, crit_pts = np.array(crit_pts), timings_our=T_our, timings_dem=T_dem)
-	print('########### Timed ###########')
-	return crit_pts, T_our, T_dem
+# 	np.savez(path_to_savings, crit_pts = np.array(crit_pts), timings_our=T_our, timings_dem=T_dem)
+# 	print('########### Timed ###########')
+# 	return crit_pts, T_our, T_dem
 
-# %%
+# # %%
 
-# TODO: DONT FORGET TO SCREEN BEFORE LAUNCHING THE TASK
+# # TODO: DONT FORGET TO SCREEN BEFORE LAUNCHING THE TASK
 
-n_dir = 100
-dataset = 'fashion_mnist'
+# n_dir = 100
+# dataset = 'fashion_mnist'
 
-# T = 100, num_thresholds = 10
-num_thresholds = 10
-timing_dataset(dataset, n_dir, 100, num_thresholds)
+# # T = 100, num_thresholds = 10
+# num_thresholds = 10
+# timing_dataset(dataset, n_dir, 100, num_thresholds)
 
-# Num thresholds 
-num_thresh_list = [5, 10, 32, 50, 100, 250]
-for num_thresholds in num_thresh_list:
-	timing_dataset(dataset, n_dir, 50, num_thresholds, stop='1000')
+# #%%
+# # Num thresholds 
+# num_thresh_list = [5, 10, 32, 50, 100, 250]
+# for num_thresholds in num_thresh_list:
+# 	timing_dataset(dataset, n_dir, 50, num_thresholds, stop='1000')
