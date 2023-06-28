@@ -133,18 +133,18 @@ def timing(sizes, spacings, directions, Ts, title='', n_samples=1, time_our=True
 	print('########### Timed ###########')
 	return N, T_our, T_dem
 #%% Test
-dim = 2
-sizes = [20]
-n_crit_pts = [10, 50]
-spacings = num_crit_to_spacing(dim, sizes, n_crit_pts)
-# spacings = np.array([int(size/20) for size in sizes]).reshape((1,len(sizes)))
-n_dir = 50
-directions = np.random.rand(n_dir, dim)
-Ts = [5, 10]
-title = 'test'
-n_samples = 2
+# dim = 2
+# sizes = [20]
+# n_crit_pts = [10, 50]
+# spacings = num_crit_to_spacing(dim, sizes, n_crit_pts)
+# # spacings = np.array([int(size/20) for size in sizes]).reshape((1,len(sizes)))
+# n_dir = 50
+# directions = np.random.rand(n_dir, dim)
+# Ts = [5, 10]
+# title = 'test'
+# n_samples = 2
 
-N, T_our, T_dem = timing(sizes, spacings, directions, Ts, title, n_samples, time_our=True, time_dem=True)
+# N, T_our, T_dem = timing(sizes, spacings, directions, Ts, title, n_samples, time_our=True, time_dem=True)
 
 #%% Timing
 
@@ -184,14 +184,14 @@ N, T_our, T_dem = timing(sizes, spacings, directions, Ts, title, n_samples, time
 # 	N, T_our, T_dem = timing(sizes, spacings, directions, Ts, title, n_samples, time_our=False, time_dem=True)
 
 # Both with respect to critical points and T, n_dir = 50, size = 100
-# n_dir = 50
-# title = 'critical_pts_ndir-'+str(n_dir)+'size-100'
-# sizes = [100]
-# n_crit_pts = [10, 25, 50, 100, 200, 500, 1000, 5000]
-# spacings = num_crit_to_spacing(dim, sizes, n_crit_pts)
-# Ts = [32]
-# directions = np.random.rand(n_dir,2)
-# N, T_our, T_dem = timing(sizes, spacings, directions, Ts, title, n_samples, time_our=True, time_dem=True)
+n_dir = 50
+title = 'critical_pts_ndir-'+str(n_dir)+'size-100'
+sizes = [100]
+n_crit_pts = [10, 25, 50, 100, 200]
+spacings = num_crit_to_spacing(dim, sizes, n_crit_pts)
+Ts = [32]
+directions = np.random.rand(n_dir,2)
+N, T_our, T_dem = timing(sizes, spacings, directions, Ts, title, n_samples, time_our=True, time_dem=True)
 
 # # Both with respect to critical points and T, n_dir = 1000, size = 1000
 # title = 'critical_pts_ndir-'+str(n_dir)+'size-1000'
