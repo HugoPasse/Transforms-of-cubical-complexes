@@ -70,8 +70,8 @@ def timing_demeter(img, directions, T=32):
 	time_total = time_init + time_complex + time_ECT
 	print('Done.', end=clear_line)
 	return cplx, seed, ect, time_init, time_complex, time_ECT, time_total
+
 # %% Fashion_MNIST
-#%%
 import tensorflow_datasets as tfds
 
 def timing_dataset(dataset, n_dir, T, num_thresholds, time_our=True, time_dem=True, stop='full', dual=False):
@@ -94,7 +94,7 @@ def timing_dataset(dataset, n_dir, T, num_thresholds, time_our=True, time_dem=Tr
 	with open(path_to_savings+'.txt', 'a+') as file:
 		file.write('###### Timing ######\n\n')
 		file.write('Nbre directions: {}\n'.format(n_dir))
-		file.write('T in sec')
+		file.write('T in sec\n')
 		file.write('Our: \t T init cplx \t|\t T pre_processing \t|\t T ECT \t|\t T Total \n\n')
 		file.close()
 
@@ -114,25 +114,25 @@ def timing_dataset(dataset, n_dir, T, num_thresholds, time_our=True, time_dem=Tr
 				our = timing_our(img_masked, directions, dual)
 				cplx = our[0]
 				T_our += our[1:]
-				cplx.init_hybrid_transform(1)
-				n_crit = len(cplx.get_critical_vertices(0))
-				crit_pts.append(n_crit)
+				# cplx.init_hybrid_transform(1)
+				# n_crit = len(cplx.get_critical_vertices(0))
+				# crit_pts.append(n_crit)
 				with open(path_to_savings+'.txt', 'a+') as file:
-					file.write('Nbr critical points: {}\n'.format(n_crit))
+					# file.write('Nbr critical points: {}\n'.format(n_crit))
 					file.write('Our: {}\n'.format(our[1:]))
 					file.write('Our current total: {}\n'.format(T_our))
 					file.close()
 		else:
 			break
 
-	np.savez(path_to_savings, crit_pts = np.array(crit_pts), timings_our=T_our)
+	np.savez(path_to_savings, timings_our=T_our)
 	print('########### Timed ###########')
-	return crit_pts, T_our
+	return T_our
 
 #%% Test
 # n_dir = 10
 # dataset = 'fashion_mnist'
-# N, T_our = timing_dataset(dataset, n_dir, 100, 10, stop='2')
+# T_our = timing_dataset(dataset, n_dir, 100, 10, stop='2')
 
 # %%
 # TODO: DONT FORGET TO SCREEN BEFORE LAUNCHING THE TASK
@@ -143,3 +143,4 @@ dataset = 'fashion_mnist'
 # T = 100, num_thresholds = 10
 num_thresholds = 10
 timing_dataset(dataset, n_dir, 100, num_thresholds, dual=True)
+# %%
