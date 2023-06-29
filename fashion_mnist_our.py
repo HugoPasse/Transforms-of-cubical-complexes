@@ -81,7 +81,9 @@ def timing_dataset(dataset, n_dir, T, num_thresholds, time_our=True, time_dem=Tr
 	print('Nbre directions:', n_dir)
 	print('Num_thresholds:', num_thresholds)
 
-	ds = tfds.as_numpy(tfds.load(dataset, split='train', shuffle_files=True, as_supervised=True))
+	data_train = pd.read_csv('fashion_mnist/fashion-mnist_train.csv')
+	X = np.array(data_train.iloc[:, 1:])
+	X = X.reshape(X.shape[0], 28, 28)
 	directions = np.random.rand(n_dir,2)
 
 	T_our = np.zeros(5)
@@ -98,14 +100,13 @@ def timing_dataset(dataset, n_dir, T, num_thresholds, time_our=True, time_dem=Tr
 		file.write('Our: \t T init cplx \t|\t T pre_processing \t|\t T ECT \t|\t T Total \n\n')
 		file.close()
 
-	for i, (img, label) in enumerate(ds):
-		img = img.reshape((img.shape[0],img.shape[1]))
+	for i in range(X.shape[0]):
+		img = X[i]
 		values = np.unique(img)[1:]
 		val_quantiles = [np.quantile(values, q) for q in quantiles]
 
 		with open(path_to_savings+'.txt', 'a+') as file:
 			file.write('\nIndex = {}\n'.format(i))
-			file.write('Label = {}\n'.format(label))
 		if stop=='full' or i < int(stop):
 			if time_our: 
 				img_masked = np.zeros_like(img)
@@ -130,17 +131,17 @@ def timing_dataset(dataset, n_dir, T, num_thresholds, time_our=True, time_dem=Tr
 	return T_our
 
 #%% Test
-# n_dir = 10
-# dataset = 'fashion_mnist'
-# T_our = timing_dataset(dataset, n_dir, 100, 10, stop='2')
+n_dir = 10
+dataset = 'fashion_mnist'
+T_our = timing_dataset(dataset, n_dir, 100, 10, stop='2')
 
 # %%
 # TODO: DONT FORGET TO SCREEN BEFORE LAUNCHING THE TASK
 
-n_dir = 100
-dataset = 'fashion_mnist'
+# n_dir = 100
+# dataset = 'fashion_mnist'
 
-# T = 100, num_thresholds = 10
-num_thresholds = 10
-timing_dataset(dataset, n_dir, 100, num_thresholds, dual=True)
+# # T = 100, num_thresholds = 10
+# num_thresholds = 10
+# timing_dataset(dataset, n_dir, 100, num_thresholds, dual=True)
 # %%
