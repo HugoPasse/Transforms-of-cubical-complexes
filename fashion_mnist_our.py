@@ -1,5 +1,6 @@
 #%%
 import time
+import pandas as pd
 import numpy as np
 clear_line = '\r'+' '*50+'\r'
 #%%
