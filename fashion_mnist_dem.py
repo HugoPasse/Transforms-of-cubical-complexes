@@ -91,7 +91,7 @@ def timing_dataset(dataset, n_dir, T, num_thresholds, time_our=True, time_dem=Tr
 	quantiles = [k/(num_thresholds+1) for k in range(1,num_thresholds+1)]
 
 	overwrite_lock = str(np.random.rand())
-	path_to_savings = 'timings/timing-logs-T-{}-num_thresh-{}-ndir-{}-'.format(T,num_thresholds,n_dir)+ dataset + '-' + overwrite_lock
+	path_to_savings = 'timings/timing-logs-dem-T-{}-num_thresh-{}-ndir-{}-'.format(T,num_thresholds,n_dir)+ dataset + '-' + overwrite_lock
 	with open(path_to_savings+'.txt', 'a+') as file:
 		file.write('###### Timing ######\n\n')
 		file.write('Nbre directions: {}\n'.format(n_dir))
@@ -121,18 +121,18 @@ def timing_dataset(dataset, n_dir, T, num_thresholds, time_our=True, time_dem=Tr
 	return T_dem
 
 #%% Test
-n_dir = 10
-dataset = 'fashion_mnist'
-T_dem = timing_dataset(dataset, n_dir, 100, 10, stop='2')
+# n_dir = 10
+# dataset = 'fashion_mnist'
+# T_dem = timing_dataset(dataset, n_dir, 100, 10, stop='2')
 
 # %%
 # TODO: DONT FORGET TO SCREEN BEFORE LAUNCHING THE TASK
 
-# n_dir = 100
-# dataset = 'fashion_mnist'
+n_dir = 100
+dataset = 'fashion_mnist'
 
-# # T = 100, num_thresholds = 10
-# num_thresholds = 10
-# timing_dataset(dataset, n_dir, 100, num_thresholds, dual=True)
+# T = 100, num_thresholds = 10
+num_thresholds = 10
+timing_dataset(dataset, n_dir, 100, num_thresholds, dual=True)
 # %%
 # WITH NO COMPUTATION: 0:05.99 s (real time) 1263204 KB (max mem allocated)

@@ -93,7 +93,7 @@ def timing_dataset(dataset, n_dir, T, num_thresholds, time_our=True, time_dem=Tr
 	quantiles = [k/(num_thresholds+1) for k in range(1,num_thresholds+1)]
 
 	overwrite_lock = str(np.random.rand())
-	path_to_savings = 'timings/timing-logs-T-{}-num_thresh-{}-ndir-{}-'.format(T,num_thresholds,n_dir)+ dataset + '-' + overwrite_lock
+	path_to_savings = 'timings/timing-logs-our-num_thresh-{}-ndir-{}-'.format(num_thresholds,n_dir)+ dataset + '-' + overwrite_lock
 	with open(path_to_savings+'.txt', 'a+') as file:
 		file.write('###### Timing ######\n\n')
 		file.write('Nbre directions: {}\n'.format(n_dir))
