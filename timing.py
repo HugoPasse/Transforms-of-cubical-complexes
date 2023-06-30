@@ -180,7 +180,7 @@ n_dirs = [50, 100, 500, 1000]
 for n_dir in [50, 100]:
 	title = 'size_our_ndir-'+str(n_dir)+'ncrit-200'
 	sizes = [20, 40, 100, 500, 1000, 5000]
-	spacings = np.array([int(size/20) for size in sizes]).reshape((1,len(sizes))) # 200 critical points
+	spacings = np.array([int(size/20) for size in sizes]) # 200 critical points
 	Ts = [50, 100, 500, 1000]
 	directions = np.random.rand(n_dir,2)
 	N, T_our, T_dem = timing(sizes, spacings, directions, Ts, title, n_samples, time_our=True, time_dem=False)
