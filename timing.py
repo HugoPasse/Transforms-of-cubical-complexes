@@ -103,7 +103,7 @@ def timing(sizes, spacings, directions, Ts, title='', n_samples=1, time_our=True
 
 	T_our = np.zeros((n_samples,len(sizes),len(spacings[0]),5))
 	T_dem = np.zeros((n_samples,len(sizes),len(spacings[0]),len(Ts), 4))
-	N = np.zeros(len(n_crit_pts))
+	N = np.zeros(len(spacings))
 	for i, size in enumerate(sizes):
 		for j in range(len(spacings[0])):
 			spacing = spacings[0,j]
