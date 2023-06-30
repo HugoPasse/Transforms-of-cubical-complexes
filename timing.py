@@ -156,25 +156,25 @@ dim = 2
 n_samples = 10
 n_dirs = [50, 100, 500, 1000]
 
-# Our with respect to critical points, size = 100
-for n_dir in n_dirs:
-	title = 'critical_pts_our-ndir-'+str(n_dir)+'size-100'
-	sizes = [100]
-	n_crit_pts = [10, 25, 50, 100, 200, 500, 1000, 5000]
-	spacings = num_crit_to_spacing(dim, sizes, n_crit_pts)
-	directions = np.random.rand(n_dir,2)
-	Ts = [50, 100, 500, 1000]
-	N, T_our, T_dem = timing(sizes, spacings, directions, Ts, title, n_samples, time_our=True, time_dem=False)
+# # Our with respect to critical points, size = 100
+# for n_dir in n_dirs:
+# 	title = 'critical_pts_our-ndir-'+str(n_dir)+'size-100'
+# 	sizes = [100]
+# 	n_crit_pts = [10, 25, 50, 100, 200, 500, 1000, 5000]
+# 	spacings = num_crit_to_spacing(dim, sizes, n_crit_pts)
+# 	directions = np.random.rand(n_dir,2)
+# 	Ts = [50, 100, 500, 1000]
+# 	N, T_our, T_dem = timing(sizes, spacings, directions, Ts, title, n_samples, time_our=True, time_dem=False)
 
-# Our with respect to critical points, size = 1000
-for n_dir in n_dirs:
-	title = 'critical_pts_our-ndir-'+str(n_dir)+'size-1000'
-	sizes = [1000]
-	n_crit_pts = [10, 25, 50, 100, 200, 500, 1000, 5000, 10000, 50000, 100000, 500000]
-	spacings = num_crit_to_spacing(dim, sizes, n_crit_pts)
-	Ts = [50, 100, 500, 1000]
-	directions = np.random.rand(n_dir,2)
-	N, T_our, T_dem = timing(sizes, spacings, directions, Ts, title, n_samples, time_our=True, time_dem=False)
+# # Our with respect to critical points, size = 1000
+# for n_dir in n_dirs:
+# 	title = 'critical_pts_our-ndir-'+str(n_dir)+'size-1000'
+# 	sizes = [1000]
+# 	n_crit_pts = [10, 25, 50, 100, 200, 500, 1000, 5000, 10000, 50000, 100000, 500000]
+# 	spacings = num_crit_to_spacing(dim, sizes, n_crit_pts)
+# 	Ts = [50, 100, 500, 1000]
+# 	directions = np.random.rand(n_dir,2)
+# 	N, T_our, T_dem = timing(sizes, spacings, directions, Ts, title, n_samples, time_our=True, time_dem=False)
 
 # Our with respect to sizes, crit = 200
 for n_dir in [50, 100]:
