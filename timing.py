@@ -10,7 +10,7 @@ def timing_our(img, directions, dual=False):
 	print('Timing our...', end=clear_line)
 	# Construct complex
 	tic = time.perf_counter()
-	cplx = ecc.EmbeddedComplex(img, 1, input_top_cells=(not dual))
+	cplx = ecc.EmbeddedComplex(img*(-1)**dual, 1, input_top_cells=(not dual))
 	toc = time.perf_counter()
 	time_cplx = toc-tic
 	
@@ -80,20 +80,22 @@ def num_crit_to_spacing(dim, sizes, n_crit_pts):
 	return np.floor(spacings)
 
 #%%
-def timing(sizes, spacings, directions, Ts, title='', n_samples=1, time_our=True, time_dem=True, negative=False):
+def timing(sizes, spacings, directions, Ts, title='', n_samples=1, time_our=True, time_dem=True, negative=False, dual=True):
 	print('########### Timing ###########')
 	print('sizes:', sizes)
 	print('spacings:\n', spacings)
 	print('Nbre directions:', len(directions))
-	print('Ts (for demeter):', Ts, end='\n'+'-'*50+'\n')
+	print('Dual:', dual)
+	print('Ts (for demeter):', Ts, end='\r'+'-'*50+'\r')
 
 	overwrite_lock = str(np.random.rand())
-	path_to_savings = 'timings/timing-'+ title + '-' + overwrite_lock
+	path_to_savings = 'timings/timing-logs-'+ title + '-' + overwrite_lock
 	with open(path_to_savings+'.txt', 'a+') as file:
 		file.write('###### Timing ######\n\n')
 		file.write('sizes: {}\n'.format(sizes))
 		file.write('spacings:\n{}\n'.format(spacings))
 		file.write('Nbre directions: {}\n'.format(len(directions)))
+		file.write('Dual: {}\n'.format(dual))
 		file.write('Ts (for demeter): {}\n\n'.format(Ts))
 		file.write('Our time: \t init cplx \t|\t upper_star \t|\t pre_processing \t|\t ECT \t|\t Total\n')
 		file.write('Demeter time: \t init \t\t|\t complexifying \t\t|\t ECT \t|\t Total\n\n')
@@ -115,7 +117,7 @@ def timing(sizes, spacings, directions, Ts, title='', n_samples=1, time_our=True
 					file.write('Sample: {}\n'.format(_+1))
 					file.close()
 				if time_our:
-					our = timing_our(img, directions)
+					our = timing_our(img, directions, dual)
 					cplx, T_our[_,i,j,:] = our[0], our[1:]
 					cplx.init_hybrid_transform(1)
 					N[j] = len(cplx.get_critical_vertices(0))
@@ -144,54 +146,54 @@ def timing(sizes, spacings, directions, Ts, title='', n_samples=1, time_our=True
 # title = 'test'
 # n_samples = 2
 
-# N, T_our, T_dem = timing(sizes, spacings, directions, Ts, title, n_samples, time_our=True, time_dem=True)
+# N, T_our, T_dem = timing(sizes, spacings, directions, Ts, title, n_samples, time_our=True, time_dem=False, dual=True)
 
 #%% Timing
 
-# # TODO: DONT FORGET TO SCREEN BEFORE LAUNCHING THE TASK
+# TODO: DONT FORGET TO SCREEN BEFORE LAUNCHING THE TASK
 
-# dim = 2
-# n_samples = 10
-# n_dirs = [50, 100, 500, 1000]
+dim = 2
+n_samples = 10
+n_dirs = [50, 100, 500, 1000]
 
-# # Demeter with respect to critical points and T, size = 100
-# for n_dir in n_dirs:
-# 	title = 'critical_pts_demeter-ndir-'+str(n_dir)+'size-100'
-# 	sizes = [100]
-# 	n_crit_pts = [10, 25, 50, 100, 200, 500, 1000, 5000]
-# 	spacings = num_crit_to_spacing(dim, sizes, n_crit_pts)
-# 	directions = np.random.rand(n_dir,2)
-# 	Ts = [50, 100, 500, 1000]
-# 	N, T_our, T_dem = timing(sizes, spacings, directions, Ts, title, n_samples, time_our=False, time_dem=True)
+# Our with respect to critical points, size = 100
+for n_dir in n_dirs:
+	title = 'critical_pts_our-ndir-'+str(n_dir)+'size-100'
+	sizes = [100]
+	n_crit_pts = [10, 25, 50, 100, 200, 500, 1000, 5000]
+	spacings = num_crit_to_spacing(dim, sizes, n_crit_pts)
+	directions = np.random.rand(n_dir,2)
+	Ts = [50, 100, 500, 1000]
+	N, T_our, T_dem = timing(sizes, spacings, directions, Ts, title, n_samples, time_our=True, time_dem=False)
 
-# # Demeter with respect to critical points and T, size = 1000
-# for n_dir in n_dirs:
-# 	title = 'critical_pts_demeter-ndir-'+str(n_dir)+'size-1000'
-# 	sizes = [1000]
-# 	n_crit_pts = [10, 25, 50, 100, 200, 500, 1000, 5000, 10000, 50000, 100000, 500000]
-# 	spacings = num_crit_to_spacing(dim, sizes, n_crit_pts)
-# 	Ts = [50, 100, 500, 1000]
-# 	directions = np.random.rand(n_dir,2)
-# 	N, T_our, T_dem = timing(sizes, spacings, directions, Ts, title, n_samples, time_our=False, time_dem=True)
+# Our with respect to critical points, size = 1000
+for n_dir in n_dirs:
+	title = 'critical_pts_our-ndir-'+str(n_dir)+'size-1000'
+	sizes = [1000]
+	n_crit_pts = [10, 25, 50, 100, 200, 500, 1000, 5000, 10000, 50000, 100000, 500000]
+	spacings = num_crit_to_spacing(dim, sizes, n_crit_pts)
+	Ts = [50, 100, 500, 1000]
+	directions = np.random.rand(n_dir,2)
+	N, T_our, T_dem = timing(sizes, spacings, directions, Ts, title, n_samples, time_our=True, time_dem=False)
 
-# # Demeter with respect to sizes and T, crit = 200
-# for n_dir in [50, 100]:
-# 	title = 'size_demeter_ndir-'+str(n_dir)+'ncrit-200'
-# 	sizes = [20, 40, 100, 500, 1000, 5000]
-# 	spacings = np.array([int(size/20) for size in sizes]).reshape((1,len(sizes))) # 200 critical points
-# 	Ts = [50, 100, 500, 1000]
-# 	directions = np.random.rand(n_dir,2)
-# 	N, T_our, T_dem = timing(sizes, spacings, directions, Ts, title, n_samples, time_our=False, time_dem=True)
+# Our with respect to sizes, crit = 200
+for n_dir in [50, 100]:
+	title = 'size_our_ndir-'+str(n_dir)+'ncrit-200'
+	sizes = [20, 40, 100, 500, 1000, 5000]
+	spacings = np.array([int(size/20) for size in sizes]).reshape((1,len(sizes))) # 200 critical points
+	Ts = [50, 100, 500, 1000]
+	directions = np.random.rand(n_dir,2)
+	N, T_our, T_dem = timing(sizes, spacings, directions, Ts, title, n_samples, time_our=True, time_dem=False)
 
 # Both with respect to critical points and T, n_dir = 50, size = 100
-n_dir = 50
-title = 'critical_pts_ndir-'+str(n_dir)+'size-100'
-sizes = [100]
-n_crit_pts = [10, 25, 50, 100, 200]
-spacings = num_crit_to_spacing(dim, sizes, n_crit_pts)
-Ts = [32]
-directions = np.random.rand(n_dir,2)
-N, T_our, T_dem = timing(sizes, spacings, directions, Ts, title, n_samples, time_our=True, time_dem=True)
+# n_dir = 50
+# title = 'critical_pts_ndir-'+str(n_dir)+'size-100'
+# sizes = [100]
+# n_crit_pts = [10, 25, 50, 100, 200]
+# spacings = num_crit_to_spacing(dim, sizes, n_crit_pts)
+# Ts = [32]
+# directions = np.random.rand(n_dir,2)
+# N, T_our, T_dem = timing(sizes, spacings, directions, Ts, title, n_samples, time_our=True, time_dem=True)
 
 # # Both with respect to critical points and T, n_dir = 1000, size = 1000
 # title = 'critical_pts_ndir-'+str(n_dir)+'size-1000'
