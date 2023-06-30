@@ -73,7 +73,6 @@ def timing_demeter(img, directions, T=32):
 	return cplx, seed, ect, time_init, time_complex, time_ECT, time_total
 
 # %% Fashion_MNIST
-import tensorflow_datasets as tfds
 
 def timing_dataset(dataset, n_dir, T, num_thresholds, time_our=True, time_dem=True, stop='full', dual=False):
 	print('########### Timing dataset ###########')
@@ -136,6 +135,10 @@ def timing_dataset(dataset, n_dir, T, num_thresholds, time_our=True, time_dem=Tr
 # dataset = 'fashion_mnist'
 # T_our = timing_dataset(dataset, n_dir, 100, 10, stop='2')
 
+# %% EXPERIMENTS
+
+# WITH NO COMPUTATION: 0:05.99 s (real time) 1263204 KB (max mem allocated)
+
 # %%
 # TODO: DONT FORGET TO SCREEN BEFORE LAUNCHING THE TASK
 
@@ -145,5 +148,3 @@ dataset = 'fashion_mnist'
 # T = 100, num_thresholds = 10
 num_thresholds = 10
 timing_dataset(dataset, n_dir, 100, num_thresholds, dual=True)
-# %%
-# WITH NO COMPUTATION: 0:05.99 s (real time) 1263204 KB (max mem allocated)
