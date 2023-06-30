@@ -148,3 +148,5 @@ dataset = 'fashion_mnist'
 # T = 100, num_thresholds = 10
 num_thresholds = 10
 timing_dataset(dataset, n_dir, 100, num_thresholds, dual=True)
+
+# TIMING: 12:23.46 (real time) 7410512 KB (max mem allocated)
