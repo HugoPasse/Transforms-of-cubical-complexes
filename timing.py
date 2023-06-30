@@ -103,7 +103,7 @@ def timing(sizes, spacings, directions, Ts, title='', n_samples=1, time_our=True
 
 	T_our = np.zeros((n_samples,len(sizes),len(spacings[0]),5))
 	T_dem = np.zeros((n_samples,len(sizes),len(spacings[0]),len(Ts), 4))
-	N = np.zeros(len(spacings))
+	N = np.zeros(len(spacings[0]))
 	for i, size in enumerate(sizes):
 		for j in range(len(spacings[0])):
 			spacing = spacings[0,j]
@@ -136,10 +136,10 @@ def timing(sizes, spacings, directions, Ts, title='', n_samples=1, time_our=True
 	return N, T_our, T_dem
 #%% Test
 # dim = 2
-# sizes = [20]
-# n_crit_pts = [10, 50]
-# spacings = num_crit_to_spacing(dim, sizes, n_crit_pts)
-# # spacings = np.array([int(size/20) for size in sizes]).reshape((1,len(sizes)))
+# sizes = [20, 40]
+# # n_crit_pts = [10, 50]
+# # spacings = num_crit_to_spacing(dim, sizes, n_crit_pts)
+# spacings = np.array([int(size/20) for size in sizes]).reshape((1,len(sizes)))
 # n_dir = 50
 # directions = np.random.rand(n_dir, dim)
 # Ts = [5, 10]
@@ -180,7 +180,7 @@ n_dirs = [50, 100, 500, 1000]
 for n_dir in [50, 100]:
 	title = 'size_our_ndir-'+str(n_dir)+'ncrit-200'
 	sizes = [20, 40, 100, 500, 1000, 5000]
-	spacings = np.array([int(size/20) for size in sizes]) # 200 critical points
+	spacings = np.array([int(size/20) for size in sizes]).reshape((1,len(sizes))) # 200 critical points
 	Ts = [50, 100, 500, 1000]
 	directions = np.random.rand(n_dir,2)
 	N, T_our, T_dem = timing(sizes, spacings, directions, Ts, title, n_samples, time_our=True, time_dem=False)
