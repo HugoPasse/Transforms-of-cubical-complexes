@@ -126,6 +126,8 @@ def timing_dataset(dataset, n_dir, T, num_thresholds, time_our=True, time_dem=Tr
 # T_dem = timing_dataset(dataset, n_dir, 100, 10, stop='2')
 
 # %%
+# WITH NO COMPUTATION: 0:05.99 s (real time) 1263204 KB (max mem allocated)
+
 # TODO: DONT FORGET TO SCREEN BEFORE LAUNCHING THE TASK
 
 n_dir = 100
@@ -134,5 +136,6 @@ dataset = 'fashion_mnist'
 # T = 100, num_thresholds = 10
 num_thresholds = 10
 timing_dataset(dataset, n_dir, 100, num_thresholds, dual=True)
+
+# RESULT : 8:05:57 s (real time) 1242968 KB (max mem allocated)
 # %%
-# WITH NO COMPUTATION: 0:05.99 s (real time) 1263204 KB (max mem allocated)
