@@ -25,9 +25,9 @@ cdef extern from "Embedded_cubical_complex_interface.h" namespace "Gudhi":
         void impose_upper_star_filtration() nogil
         void impose_lower_star_filtration_from_vertices() nogil
 
-        void init_hybrid_transform(int num_jobs) nogil
-        void init_radon_transform(int num_jobs) nogil
-        void init_ect(int num_jobs) nogil
+        void preproc_hybrid_transform(int num_jobs) nogil
+        void preproc_radon_transform(int num_jobs) nogil
+        void preproc_ect(int num_jobs) nogil
 
         vector[double] compute_hybrid_transform(int kernel_num, vector[vector[double]] directions_list, int num_jobs) nogil
         vector[vector[double]] compute_radon_transform_python(vector[double] direction) nogil
@@ -36,13 +36,14 @@ cdef extern from "Embedded_cubical_complex_interface.h" namespace "Gudhi":
         
         int get_vector_index(vector[double] direction) nogil
         
-        vector[int] get_critical_vertices(int index) nogil
-        vector[int] get_critical_multiplicity(int index) nogil
+        vector[int] get_ordinary_critical_vertices(int index) nogil
+        vector[int] get_ordinary_critical_values(int index) nogil
+        vector[int] get_classical_critical_vertices(int index) nogil
+        vector[int] get_classical_critical_values(int index) nogil
+
         vector[double] get_vertex_coordinates(int index) nogil
         
         void print_filtration() nogil
-        void print_critical_vertices() nogil
-        void print_critical_multiplicity() nogil
         void print_embedding() nogil
 
 cdef class RadonTransform:
@@ -132,14 +133,14 @@ cdef class EmbeddedComplex:
         with nogil:
             self.this_ptr = new Embedded_cubical_complex_base_interface(dimensions, top_dimensional_cells, input_top_cells)
 
-    def init_hybrid_transform(self,int num_jobs=0):
-        self.this_ptr.init_hybrid_transform(num_jobs)
+    def preproc_hybrid_transform(self,int num_jobs=0):
+        self.this_ptr.preproc_hybrid_transform(num_jobs)
     
-    def init_radon_transform(self,int num_jobs=0):
-        self.this_ptr.init_radon_transform(num_jobs)
+    def preproc_radon_transform(self,int num_jobs=0):
+        self.this_ptr.preproc_radon_transform(num_jobs)
     
-    def init_ect(self,int num_jobs=0):
-        self.this_ptr.init_ect(num_jobs)
+    def preproc_ect(self,int num_jobs=0):
+        self.this_ptr.preproc_ect(num_jobs)
 
     def compute_hybrid_transform(self, kernel, vector[vector[double]] directions, int num_jobs = -1):
         if isinstance(kernel, str):
@@ -174,12 +175,18 @@ cdef class EmbeddedComplex:
     def compute_euler_caracteristic_of_complex(self):
         return self.this_ptr.compute_euler_caracteristic_of_complex()
 
-    def get_critical_vertices(self, int index):
-        return self.this_ptr.get_critical_vertices(index)
+    def get_ordinary_critical_vertices(self, index):
+        self.this_ptr.get_ordinary_critical_vertices(index)
 
-    def get_critical_multiplicity(self, int index):
-        return self.this_ptr.get_critical_multiplicity(index)
-
+    def get_ordinary_critical_values(self, index):
+        self.this_ptr.get_ordinary_critical_values(index)        
+    
+    def get_classical_critical_vertices(self, index):
+        self.this_ptr.get_classical_critical_vertices(index)        
+    
+    def get_classical_critical_values(self, index):
+        self.this_ptr.get_classical_critical_values(index)
+    
     def get_coordinates(self, int vertex):
         return self.this_ptr.get_vertex_coordinates(vertex)
 
@@ -194,12 +201,6 @@ cdef class EmbeddedComplex:
 
     def print_filtration(self):
         self.this_ptr.print_filtration()
-
-    def print_critical_vertices(self):
-        self.this_ptr.print_critical_vertices()
-
-    def print_critical_multiplicity(self):
-        self.this_ptr.print_critical_multiplicity()
 
     def print_embedding(self):
         self.this_ptr.print_embedding()
