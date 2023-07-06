@@ -90,7 +90,6 @@ mtoc = process.memory_info().rss
 time_transform = toc-tic
 print(f'{time_transform} {(mtoc-mtic)/1000}', end=' ')
 
-
 cplx.preproc_radon_transform(1)
-print(f'{len(cplx.get_classical_critical_vertices(3))}')
-print(f'{len(cplx.get_ordinary_critical_vertices(3))}')
+print(f'{len(cplx.get_classical_critical_vertices(3))}', end=' ')
+print(f'{len(cplx.get_ordinary_critical_vertices(3))}', end=' ')

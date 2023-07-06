@@ -10,11 +10,11 @@ if expe == 0:
 	sizes = [10, 20, 30]
 	n_dir = 10
 	spacings = [1*(i+1) for i in range(3)]
-	n_samples = 2
-	dual = 0
+	n_samples = 1
+	dual = 1
 	dim = 2
 	title = 'test'
-	transform = 'HT' # 'ECT' or 'Radon' or 'HT'
+	transform = 'Radon' # 'ECT' or 'Radon' or 'HT'
 
 # Experiment 1: size 
 if expe == 1:
@@ -24,7 +24,7 @@ if expe == 1:
 	n_samples = 10
 	dual = 1
 	dim = 2
-	transform = 'HT' # 'ECT' or 'Radon' or 'HT'
+	transform = 'Radon' # 'ECT' or 'Radon' or 'HT'
 	title = 'our-size-' + transform + '-dim-' + str(n_dir) + 'n-samples-' + str(n_samples) + '-dual-' + str(dual) + '-dim-' + str(dim)
 
 #%% Experiment
@@ -48,7 +48,7 @@ with open(path_to_savings + '-logs.txt', 'a+') as file:
 	file.close()
 
 result = np.zeros((n_samples,len(sizes),len(spacings),5,2))
-n_crit_pts = np.zeros((n_samples,len(sizes),len(spacings)))
+n_crit_pts = np.zeros((n_samples,len(sizes),len(spacings), 2))
 for _ in range(n_samples):
 	for i, size in enumerate(sizes):
 		for j, spacing in enumerate(spacings):
@@ -57,7 +57,7 @@ for _ in range(n_samples):
 			output = subprocess.check_output(cmd, shell=True)
 			temp_res = [float(_.decode()) for _ in output.split()]
 			result[_,i,j] = np.array([(temp_res[2*_],temp_res[2*_+1]) for _ in range(4)]+[(sum(temp_res[2*_] for _ in range(4)), sum(temp_res[2*_+1] for _ in range(4)))])
-			n_crit_pts[_,i,j] = int(temp_res[-1])
+			n_crit_pts[_,i,j] = np.array([int(temp_res[-2]), int(temp_res[-1])])
 			with open(path_to_savings+'-logs.txt', 'a+') as file:
 				file.write(f'\n nbr critical points: {n_crit_pts[_,i,j]}\n')
 				file.write(f'result:\n{result[_,i,j]}\n')
