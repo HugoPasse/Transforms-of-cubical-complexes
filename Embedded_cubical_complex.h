@@ -603,16 +603,17 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
         //*********************************************//
         
         Radon_transform compute_radon_transform(std::vector<double> &direction){
-            // ADAPT
             if(are_ord_crit_pts_computed == 0){
                 compute_ordinary_critical_vertices();
             }
             if(are_cla_crit_pts_computed == 0){
                 compute_classical_critical_vertices();
             }
-
             std::vector<double> _T;
             std::vector<double> _Values;
+
+            _T.push_back(-std::numeric_limits<double>::infinity());
+            _Values.push_back(0);
 
             std::vector<double> _singular_T;
             std::vector<double> _singular_values;
@@ -639,7 +640,6 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
             //We sort the lists of indices because we want to sort critical points by scalar product.
             std::sort(indices.begin(), indices.end(), [&scalar_pdt](int i, int j) {return scalar_pdt[i] < scalar_pdt[j];});
             std::sort(singular_indices.begin(), singular_indices.end(), [&singular_scalar_pdt](int i, int j) {return singular_scalar_pdt[i] < singular_scalar_pdt[j];});
-            
             //Filling T with changing points and Values[i] = Radon(t) for all t \in [T[i],T[i+1]]
             //Last element of values should always be 0
             
