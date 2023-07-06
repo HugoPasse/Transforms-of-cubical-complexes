@@ -176,16 +176,16 @@ cdef class EmbeddedComplex:
         return self.this_ptr.compute_euler_caracteristic_of_complex()
 
     def get_ordinary_critical_vertices(self, index):
-        self.this_ptr.get_ordinary_critical_vertices(index)
+        return self.this_ptr.get_ordinary_critical_vertices(index)
 
     def get_ordinary_critical_values(self, index):
-        self.this_ptr.get_ordinary_critical_values(index)        
+        return self.this_ptr.get_ordinary_critical_values(index)        
     
     def get_classical_critical_vertices(self, index):
-        self.this_ptr.get_classical_critical_vertices(index)        
+        return self.this_ptr.get_classical_critical_vertices(index)        
     
     def get_classical_critical_values(self, index):
-        self.this_ptr.get_classical_critical_values(index)
+        return self.this_ptr.get_classical_critical_values(index)
     
     def get_coordinates(self, int vertex):
         return self.this_ptr.get_vertex_coordinates(vertex)
