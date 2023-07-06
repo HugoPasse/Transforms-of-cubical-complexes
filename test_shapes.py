@@ -1,11 +1,10 @@
 import numpy as np
 
-def num_crit_to_spacing(dim, sizes, n_crit_pts):
-	spacings = np.zeros((len(sizes),len(n_crit_pts)))
-	for i, size in enumerate(sizes):
-		for j, ncrit in enumerate(n_crit_pts):
-			spacings[i,j] = (size/2)*((2/ncrit)**(1/dim))
-	return np.floor(spacings)
+def num_crit_to_spacing(dim, size, n_crit_pts):
+	spacings = []
+	for ncrit in n_crit_pts:
+		spacings.append(int((size/2)*((2/ncrit)**(1/dim))))
+	return spacings
 
 def rectangle(sizes,value):
 	return np.full(sizes,value)

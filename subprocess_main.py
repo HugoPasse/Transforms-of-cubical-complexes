@@ -2,8 +2,9 @@
 import numpy as np
 import os
 import subprocess
+from test_shapes import num_crit_to_spacing
 
-expe = 0
+expe = 2
 
 # Experiment 0: test
 if expe == 0:
@@ -26,6 +27,17 @@ if expe == 1:
 	dim = 2
 	transform = 'Radon' # 'ECT' or 'Radon' or 'HT'
 	title = 'our-size-' + transform + '-dim-' + str(n_dir) + 'n-samples-' + str(n_samples) + '-dual-' + str(dual) + '-dim-' + str(dim)
+
+if expe == 2:
+	sizes = [1000]
+	n_dir = 100
+	dim = 2
+	n_crit_pts = [10, 25, 50, 100, 200, 500, 1000, 5000, 10000, 50000, 100000, 500000]
+	spacings = num_crit_to_spacing(dim, sizes[0], n_crit_pts)
+	n_samples = 10
+	dual = 1
+	transform = 'HT' # 'ECT' or 'Radon' or 'HT'
+	title = 'our-crit-pts-' + transform + '-n_dir-' + str(n_dir) + 'n-samples-' + str(n_samples) + '-dual-' + str(dual) + '-dim-' + str(dim)
 
 #%% Experiment
 overwrite_lock = str(np.random.rand())
