@@ -3,17 +3,33 @@ import numpy as np
 import os
 import subprocess
 
-sizes = [10, 20, 30]
-n_dir = 10
-spacings = [1*(i+1) for i in range(3)]
-n_samples = 2
-dual = 0
-dim = 2
-title = 'test'
-transform = 'HT' # 'ECT' or 'Radon' or 'HT'
+expe = 0
+
+# Experiment 0: test
+if expe == 0:
+	sizes = [10, 20, 30]
+	n_dir = 10
+	spacings = [1*(i+1) for i in range(3)]
+	n_samples = 2
+	dual = 0
+	dim = 2
+	title = 'test'
+	transform = 'HT' # 'ECT' or 'Radon' or 'HT'
+
+# Experiment 1: size 
+if expe == 1:
+	sizes = [20, 40, 100, 500, 1000, 5000]
+	n_dir = 100
+	spacings = [size//20 for size in sizes]
+	n_samples = 10
+	dual = 1
+	dim = 2
+	transform = 'HT' # 'ECT' or 'Radon' or 'HT'
+	title = 'our-size-' + transform + '-dim-' + str(n_dir) + 'n-samples-' + str(n_samples) + '-dual-' + str(dual) + '-dim-' + str(dim)
+
+#%% Experiment
 overwrite_lock = str(np.random.rand())
 path_to_savings = 'timings/' + title + '-' + overwrite_lock
-
 print('######################')
 print('transform:', transform)
 print('sizes:', sizes)
