@@ -4,9 +4,9 @@ import numpy as np
 clear_line = '\r'+' '*50+'\r'
 #%%
 import embedded_cubical_complex as ecc
-import test_shapes
+from test_shapes import num_crit_to_spacing, regular_points
 
-def timing_our(img, directions, dual=False):
+def timing_our(img, directions, dual=True):
 	print('Timing our...', end=clear_line)
 	# Construct complex
 	tic = time.perf_counter()
@@ -36,18 +36,16 @@ def timing_our(img, directions, dual=False):
 	toc = time.perf_counter()
 	time_ECT = toc-tic
 	
-	time_total = time_cplx + time_preproc + time_ECT
-	
 	print('Done.', end=clear_line)
 
-	return cplx, time_cplx, time_ustar, time_preproc, time_ECT, time_total
+	return cplx, time_cplx, time_ustar, time_preproc_radon, time_radon, time_preproc_ECT,time_ECT, time_preproc_ht, time_ht
 
 #%%
 import demeter.euler as euler
 import demeter.misc as misc
 import demeter.directions as dirs
 
-def timing_demeter(img, directions, T=32):
+def timing_demeter(img, directions, T=50):
 	print('Timing dem...', end=clear_line)
 	# Initializing cubical complex
 	tic = time.perf_counter()
@@ -72,14 +70,6 @@ def timing_demeter(img, directions, T=32):
 	return cplx, seed, ect, time_init, time_complex, time_ECT, time_total
 
 #%%
-def num_crit_to_spacing(dim, sizes, n_crit_pts):
-	spacings = np.zeros((len(sizes),len(n_crit_pts)))
-	for i, size in enumerate(sizes):
-		for j, ncrit in enumerate(n_crit_pts):
-			spacings[i,j] = (size/2)*((2/ncrit)**(1/dim))
-	return np.floor(spacings)
-
-#%%
 def timing(sizes, spacings, directions, Ts, title='', n_samples=1, time_our=True, time_dem=True, negative=False, dual=True):
 	print('########### Timing ###########')
 	print('sizes:', sizes)
@@ -101,7 +91,7 @@ def timing(sizes, spacings, directions, Ts, title='', n_samples=1, time_our=True
 		file.write('Demeter time: \t init \t\t|\t complexifying \t\t|\t ECT \t|\t Total\n\n')
 		file.close()
 
-	T_our = np.zeros((n_samples,len(sizes),len(spacings[0]),5))
+	T_our = np.zeros((n_samples,len(sizes),len(spacings[0]),5, 2))
 	T_dem = np.zeros((n_samples,len(sizes),len(spacings[0]),len(Ts), 4))
 	N = np.zeros(len(spacings[0]))
 	for i, size in enumerate(sizes):
@@ -109,7 +99,7 @@ def timing(sizes, spacings, directions, Ts, title='', n_samples=1, time_our=True
 			spacing = spacings[0,j]
 			for _ in range(n_samples):
 				print('Sample: {}'.format(_+1), end=clear_line)
-				raw_img = test_shapes.regular_points((size,size),np.array([spacing,spacing]),np.array([spacing,spacing]))
+				raw_img = regular_points((size,size),np.array([spacing,spacing]),np.array([spacing,spacing]))
 				img = raw_img if not negative else 1-raw_img
 				with open(path_to_savings+'.txt', 'a+') as file:
 					file.write('\nSize: {}\n'.format(size))
