@@ -8,12 +8,11 @@ n_dir = 10
 spacings = [1*(i+1) for i in range(3)]
 n_samples = 2
 dual = 0
+dim = 2
 title = 'test'
-transform = 'ECT' # 'ECT' or 'Radon' or 'HT'
+transform = 'HT' # 'ECT' or 'Radon' or 'HT'
 overwrite_lock = str(np.random.rand())
 path_to_savings = 'timings/' + title + '-' + overwrite_lock
-
-# TODO: critical_points, critical_values, record_all
 
 print('######################')
 print('transform:', transform)
@@ -24,7 +23,7 @@ print('dual:', dual)
 
 with open(path_to_savings + '-logs.txt', 'a+') as file:
 	file.write('############\n\n')
-	file.write(f'transform:{transform}\n')
+	file.write(f'transform: {transform} (if HT, kernel=cos)\n')
 	file.write(f'sizes: {sizes}\n')
 	file.write(f'spacings:\n{spacings}\n')
 	file.write(f'nbre directions: {n_dir}\n')
@@ -38,7 +37,7 @@ for _ in range(n_samples):
 	for i, size in enumerate(sizes):
 		for j, spacing in enumerate(spacings):
 			print(f'sample = {_} | size = {size} | spacing = {spacing}')
-			cmd = 'python3 subprocess_mem.py ' +  str(size) + ' ' + str(spacing) + ' ' + str(dual) + ' ' + path_to_savings
+			cmd = 'python3 subprocess_mem.py ' +  str(size) + ' ' + str(spacing) + ' ' + str(n_dir) + ' ' + str(dual) + ' ' + str(dim) + ' ' + path_to_savings + ' ' + transform
 			output = subprocess.check_output(cmd, shell=True)
 			temp_res = [float(_.decode()) for _ in output.split()]
 			result[_,i,j] = np.array([(temp_res[2*_],temp_res[2*_+1]) for _ in range(4)]+[(sum(temp_res[2*_] for _ in range(4)), sum(temp_res[2*_+1] for _ in range(4)))])
