@@ -3,18 +3,33 @@ import numpy as np
 import os
 import subprocess
 
-sizes = [10, 20, 30]
-n_dir = 10
-spacings = [1*(i+1) for i in range(3)]
-n_samples = 2
-dual = 0
-title = 'test'
-transform = 'ECT' # 'ECT' or 'Radon' or 'HT'
+expe = 0
+
+# Experiment 0: test
+if expe == 0:
+	sizes = [10, 20, 30]
+	n_dir = 10
+	spacings = [1*(i+1) for i in range(3)]
+	n_samples = 2
+	dual = 0
+	dim = 2
+	title = 'test'
+	transform = 'HT' # 'ECT' or 'Radon' or 'HT'
+
+# Experiment 1: size 
+if expe == 1:
+	sizes = [20, 40, 100, 500, 1000, 5000]
+	n_dir = 100
+	spacings = [size//20 for size in sizes]
+	n_samples = 10
+	dual = 1
+	dim = 2
+	transform = 'HT' # 'ECT' or 'Radon' or 'HT'
+	title = 'our-size-' + transform + '-dim-' + str(n_dir) + 'n-samples-' + str(n_samples) + '-dual-' + str(dual) + '-dim-' + str(dim)
+
+#%% Experiment
 overwrite_lock = str(np.random.rand())
 path_to_savings = 'timings/' + title + '-' + overwrite_lock
-
-# TODO: critical_points, critical_values, record_all
-
 print('######################')
 print('transform:', transform)
 print('sizes:', sizes)
@@ -24,7 +39,7 @@ print('dual:', dual)
 
 with open(path_to_savings + '-logs.txt', 'a+') as file:
 	file.write('############\n\n')
-	file.write(f'transform:{transform}\n')
+	file.write(f'transform: {transform} (if HT, kernel=cos)\n')
 	file.write(f'sizes: {sizes}\n')
 	file.write(f'spacings:\n{spacings}\n')
 	file.write(f'nbre directions: {n_dir}\n')
@@ -38,7 +53,7 @@ for _ in range(n_samples):
 	for i, size in enumerate(sizes):
 		for j, spacing in enumerate(spacings):
 			print(f'sample = {_} | size = {size} | spacing = {spacing}')
-			cmd = 'python3 subprocess_mem.py ' +  str(size) + ' ' + str(spacing) + ' ' + str(dual) + ' ' + path_to_savings
+			cmd = 'python3 subprocess_mem.py ' +  str(size) + ' ' + str(spacing) + ' ' + str(n_dir) + ' ' + str(dual) + ' ' + str(dim) + ' ' + path_to_savings + ' ' + transform
 			output = subprocess.check_output(cmd, shell=True)
 			temp_res = [float(_.decode()) for _ in output.split()]
 			result[_,i,j] = np.array([(temp_res[2*_],temp_res[2*_+1]) for _ in range(4)]+[(sum(temp_res[2*_] for _ in range(4)), sum(temp_res[2*_+1] for _ in range(4)))])
