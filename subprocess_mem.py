@@ -41,11 +41,11 @@ if not dual == 0 : dual = 1
 img = np.array(regular_points((n,n),np.array([spacing,spacing]),np.array([spacing,spacing])))
 
 # Construct complex
-tic = time.perf_counter()
 mtic = process.memory_info().rss
+tic = time.perf_counter()
 cplx = ecc.EmbeddedComplex(img*(-1)**dual, 1, input_top_cells=(not dual))
-mtoc = process.memory_info().rss
 toc = time.perf_counter()
+mtoc = process.memory_info().rss
 time_cplx = toc-tic
 print(f'{time_cplx} {(mtoc-mtic)/1000}', end=' ')
 
