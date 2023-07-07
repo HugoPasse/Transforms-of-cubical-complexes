@@ -61,20 +61,25 @@ with open(path_to_savings + '-logs.txt', 'a+') as file:
 
 result = np.zeros((n_samples,len(sizes),len(spacings),6,2))
 n_crit_pts = np.zeros((n_samples,len(sizes),len(spacings), 2))
+total_ext = np.zeros((n_samples,len(sizes),len(spacings), 2))
 for _ in range(n_samples):
 	for i, size in enumerate(sizes):
 		for j, spacing in enumerate(spacings):
 			print(f'sample = {_} | size = {size} | spacing = {spacing}')
-			cmd = '/usr/bin/time --output=' + path_to_savings + '.txt --append -f "%U %M" python3 subprocess_mem.py ' +  str(size) + ' ' + str(spacing) + ' ' + str(n_dir) + ' ' + str(dual) + ' ' + str(dim) + ' ' + path_to_savings + ' ' + transform
+			cmd = '/usr/bin/time --output=' + path_to_savings + '-total-logs.txt -f "%U %M" python3 subprocess_mem.py ' +  str(size) + ' ' + str(spacing) + ' ' + str(n_dir) + ' ' + str(dual) + ' ' + str(dim) + ' ' + path_to_savings + ' ' + transform
 			output = subprocess.check_output(cmd, shell=True)
-			print(output)
 			temp_res = [float(_.decode()) for _ in output.split()]
-			result[_,i,j] = np.array([(temp_res[2*_],temp_res[2*_+1]) for _ in range(4)]+[(sum(temp_res[2*_] for _ in range(4)), sum(temp_res[2*_+1] for _ in range(4)))] + [(temp_res[-2], temp_res[-1])])
-			n_crit_pts[_,i,j] = np.array([int(temp_res[-4]), int(temp_res[-3])])
+			result[_,i,j] = np.array([(temp_res[2*_],temp_res[2*_+1]) for _ in range(4)]+[(sum(temp_res[2*_] for _ in range(4)), sum(temp_res[2*_+1] for _ in range(4)))])
+			n_crit_pts[_,i,j] = np.array([int(temp_res[-2]), int(temp_res[-1])])
 			with open(path_to_savings+'-logs.txt', 'a+') as file:
 				file.write(f'\n nbr critical points (cla,ord): {n_crit_pts[_,i,j]}\n')
 				file.write(f'result:\n{result[_,i,j]}\n')
 				file.close()
+			with open(path_to_savings+'-total-logs.txt', 'r') as file:
+				line = file.readline().split()
+				total_ext[_,i,j] = np.array([float(line[0]), int(line[1])])
+
+
 np.savez(path_to_savings, result=result, n_crit_pts=n_crit_pts)
 print('Results saved in:', path_to_savings)
 # %%
