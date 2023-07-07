@@ -78,8 +78,5 @@ for _ in range(n_samples):
 			with open(path_to_savings+'-total-logs.txt', 'r') as file:
 				line = file.readline().split()
 				total_ext[_,i,j] = np.array([float(line[0]), int(line[1])])
-
-
 np.savez(path_to_savings, result=result, n_crit_pts=n_crit_pts, total_ext=total_ext)
 print('Results saved in:', path_to_savings)
-# %%
