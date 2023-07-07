@@ -4,7 +4,7 @@ from test_shapes import regular_points
 import sys
 import time
 import os, psutil
-process = psutil.Process()
+process = psutil.Process(os.getpid())
 
 if len(sys.argv) != 8:
 	print('Incorrect arguments')
