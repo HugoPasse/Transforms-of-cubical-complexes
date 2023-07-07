@@ -59,7 +59,7 @@ with open(path_to_savings + '-logs.txt', 'a+') as file:
 	file.write('(time (s),memory (KB)): \n init cplx \n upper_star \n pre_processing \n transform \n total \n ext total \n\n')
 	file.close()
 
-result = np.zeros((n_samples,len(sizes),len(spacings),6,2))
+result = np.zeros((n_samples,len(sizes),len(spacings),5,2))
 n_crit_pts = np.zeros((n_samples,len(sizes),len(spacings), 2))
 total_ext = np.zeros((n_samples,len(sizes),len(spacings), 2))
 for _ in range(n_samples):
@@ -80,6 +80,6 @@ for _ in range(n_samples):
 				total_ext[_,i,j] = np.array([float(line[0]), int(line[1])])
 
 
-np.savez(path_to_savings, result=result, n_crit_pts=n_crit_pts)
+np.savez(path_to_savings, result=result, n_crit_pts=n_crit_pts, total_ext=total_ext)
 print('Results saved in:', path_to_savings)
 # %%
