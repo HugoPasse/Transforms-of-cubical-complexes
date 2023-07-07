@@ -65,10 +65,10 @@ for _ in range(n_samples):
 	for i, size in enumerate(sizes):
 		for j, spacing in enumerate(spacings):
 			print(f'sample = {_} | size = {size} | spacing = {spacing}')
-			cmd = '/usr/bin/time -f "%U %M" python3 subprocess_mem.py ' +  str(size) + ' ' + str(spacing) + ' ' + str(n_dir) + ' ' + str(dual) + ' ' + str(dim) + ' ' + path_to_savings + ' ' + transform
+			cmd = '/usr/bin/time --output=' + path_to_savings + '.txt --append -f "%U %M" python3 subprocess_mem.py ' +  str(size) + ' ' + str(spacing) + ' ' + str(n_dir) + ' ' + str(dual) + ' ' + str(dim) + ' ' + path_to_savings + ' ' + transform
 			output = subprocess.check_output(cmd, shell=True)
+			print(output)
 			temp_res = [float(_.decode()) for _ in output.split()]
-			print(temp_res)
 			result[_,i,j] = np.array([(temp_res[2*_],temp_res[2*_+1]) for _ in range(4)]+[(sum(temp_res[2*_] for _ in range(4)), sum(temp_res[2*_+1] for _ in range(4)))] + [(temp_res[-2], temp_res[-1])])
 			n_crit_pts[_,i,j] = np.array([int(temp_res[-4]), int(temp_res[-3])])
 			with open(path_to_savings+'-logs.txt', 'a+') as file:
