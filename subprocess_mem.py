@@ -75,7 +75,7 @@ print(f'{time_preproc} {(mtoc-mtic)/1000}', end=' ')
 # Computing transform
 value = 0
 directions = np.random.rand(n_dir, dim)
-mtic = process.memory_full_info().rss
+mtic = process.memory_full_info().uss
 tic = time.perf_counter()
 if transform == 'ECT':
 	for i in range(n_dir):
@@ -86,7 +86,7 @@ elif transform == 'Radon':
 elif transform == 'HT':
 	value = cplx.compute_hybrid_transform('cos', directions, num_jobs=1)
 toc = time.perf_counter()
-mtoc = process.memory_full_info().rss
+mtoc = process.memory_full_info().uss
 time_transform = toc-tic
 print(f'{time_transform} {(mtoc-mtic)/1000}', end=' ')
 
