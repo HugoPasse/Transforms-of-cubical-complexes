@@ -41,11 +41,11 @@ if not dual == 0 : dual = 1
 img = np.array(regular_points((n,n),np.array([spacing,spacing]),np.array([spacing,spacing])))
 
 # Construct complex
-mtic = process.memory_info().rss
+mtic = process.memory_full_info().uss
 tic = time.perf_counter()
 cplx = ecc.EmbeddedComplex(img*(-1)**dual, 1, input_top_cells=(not dual))
 toc = time.perf_counter()
-mtoc = process.memory_info().rss
+mtoc = process.memory_full_info().uss
 time_cplx = toc-tic
 print(f'{time_cplx} {(mtoc-mtic)/1000}', end=' ')
 
@@ -59,7 +59,7 @@ if not dual:
 print(f'{time_ustar} 0', end=' ')
 
 # Preprocessing
-mtic = process.memory_info().rss
+mtic = process.memory_full_info().uss
 tic = time.perf_counter()
 if transform == 'ECT':
 	cplx.preproc_ect(1)
@@ -68,14 +68,14 @@ elif transform == 'Radon':
 elif transform == 'HT':
 	cplx.preproc_hybrid_transform(1)
 toc = time.perf_counter()
-mtoc = process.memory_info().rss
+mtoc = process.memory_full_info().uss
 time_preproc = toc-tic
 print(f'{time_preproc} {(mtoc-mtic)/1000}', end=' ')
 
 # Computing transform
 value = 0
 directions = np.random.rand(n_dir, dim)
-mtic = process.memory_info().rss
+mtic = process.memory_full_info().uss
 tic = time.perf_counter()
 if transform == 'ECT':
 	for i in range(n_dir):
@@ -86,7 +86,7 @@ elif transform == 'Radon':
 elif transform == 'HT':
 	value = cplx.compute_hybrid_transform('cos', directions, num_jobs=1)
 toc = time.perf_counter()
-mtoc = process.memory_info().rss
+mtoc = process.memory_full_info().uss
 time_transform = toc-tic
 print(f'{time_transform} {(mtoc-mtic)/1000}', end=' ')
 
