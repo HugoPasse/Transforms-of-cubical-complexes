@@ -4,7 +4,7 @@ import os
 import subprocess
 from test_shapes import num_crit_to_spacing
 
-expe = 2
+expe = 0
 
 # Experiment 0: test
 if expe == 0:
@@ -15,7 +15,7 @@ if expe == 0:
 	dual = 1
 	dim = 2
 	title = 'test'
-	transform = 'Radon' # 'ECT' or 'Radon' or 'HT'
+	transform = 'HT' # 'ECT' or 'Radon' or 'HT'
 
 # Experiment 1: size 
 if expe == 1:
@@ -25,7 +25,7 @@ if expe == 1:
 	n_samples = 10
 	dual = 1
 	dim = 2
-	transform = 'Radon' # 'ECT' or 'Radon' or 'HT'
+	transform = 'HT' # 'ECT' or 'Radon' or 'HT'
 	title = 'our-size-' + transform + '-dim-' + str(n_dir) + 'n-samples-' + str(n_samples) + '-dual-' + str(dual) + '-dim-' + str(dim)
 
 if expe == 2:

@@ -84,12 +84,12 @@ elif transform == 'Radon':
 	for i in range(n_dir):
 		value = cplx.compute_radon_transform(np.random.rand(dim))
 elif transform == 'HT':
-	value = cplx.compute_hybrid_transform('cos', directions)
+	value = cplx.compute_hybrid_transform('cos', directions, num_jobs=1)
 toc = time.perf_counter()
 mtoc = process.memory_info().rss
 time_transform = toc-tic
 print(f'{time_transform} {(mtoc-mtic)/1000}', end=' ')
 
-cplx.preproc_radon_transform(1)
+cplx.preproc_radon_transform()
 print(f'{len(cplx.get_classical_critical_vertices(3))}', end=' ')
 print(f'{len(cplx.get_ordinary_critical_vertices(3))}', end=' ')
