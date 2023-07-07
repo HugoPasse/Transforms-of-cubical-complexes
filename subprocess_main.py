@@ -75,5 +75,5 @@ for _ in range(n_samples):
 				file.write(f'result:\n{result[_,i,j]}\n')
 				file.close()
 np.savez(path_to_savings, result=result, n_crit_pts=n_crit_pts)
-print('Results saved.')
+print('Results saved in:', path_to_savings)
 # %%
