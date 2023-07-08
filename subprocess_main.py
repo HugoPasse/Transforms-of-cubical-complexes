@@ -17,7 +17,7 @@ def main(expe=0, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
 
 	# Experiment 1: size 
 	if expe == 1:
-		sizes = [40, 100, 500, 1000, 5000, 10000]
+		sizes = [40, 100, 500, 1000, 5000]
 		n_dir = 100
 		spacings = [size//20 for size in sizes]
 		n_samples = 10
