@@ -7,9 +7,9 @@ from test_shapes import num_crit_to_spacing
 def main(expe=0, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
 	# Experiment 0: test
 	if expe == 0:
-		sizes = [10, 20, 30]
+		sizes = [40, 60, 80]
 		n_dir = 10
-		spacings = [1*(i+1) for i in range(3)]
+		spacings = [size//20 for size in sizes]
 		n_samples = 1
 		dual = 1
 		dim = 2
@@ -17,7 +17,7 @@ def main(expe=0, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
 
 	# Experiment 1: size 
 	if expe == 1:
-		sizes = [20, 40, 100, 500, 1000, 5000]
+		sizes = [40, 100, 500, 1000, 5000, 10000]
 		n_dir = 100
 		spacings = [size//20 for size in sizes]
 		n_samples = 10
@@ -78,4 +78,5 @@ def main(expe=0, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
 	print('Results saved in:', path_to_savings)
 
 #%%
-main(expe=1, transform='HT')
+main(expe=0, transform='HT')
+# %%
