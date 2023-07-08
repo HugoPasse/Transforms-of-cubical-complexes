@@ -79,5 +79,6 @@ def main(expe=0, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
 	print('Results saved in:', path_to_savings)
 
 #%%
-main(expe=0, transform='HT')
-# %%
+for expe in [0,1,2]:
+	for transform in ['HT', 'Radon', 'ECT']:
+		main(expe,transform)
