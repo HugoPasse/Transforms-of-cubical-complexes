@@ -22,7 +22,7 @@ path_to_savings = sys.argv[5]
 T = sys.argv[6]
 
 
-if not (n.isdigit() and spacing.isdigit() and dual.isdigit() and T.isdigit()):
+if not (n.isdigit() and spacing.isdigit() and T.isdigit()):
 	print("Arguments must be integers")
 	exit()
 
@@ -33,10 +33,8 @@ if not path_to_savings.isprintable():
 n = int(n)
 spacing = int(spacing)
 n_dir = int(n_dir)
-dual = int(dual)
 dim = int(dim)
 T = int(T)
-if not dual == 0 : dual = 1
 
 img = np.array(regular_points((n,n),np.array([spacing,spacing]),np.array([spacing,spacing])))
 
