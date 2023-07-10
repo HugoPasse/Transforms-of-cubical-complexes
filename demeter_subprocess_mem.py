@@ -10,17 +10,16 @@ import time
 import os, psutil
 process = psutil.Process(os.getpid())
 
-if len(sys.argv) != 8:
+if len(sys.argv) != 7:
 	print('Incorrect arguments')
 	exit()
 
 n = sys.argv[1] 
 spacing = sys.argv[2]
 n_dir = sys.argv[3]
-dual = sys.argv[4]
-dim = sys.argv[5]
-path_to_savings = sys.argv[6]
-T = sys.argv[7]
+dim = sys.argv[4]
+path_to_savings = sys.argv[5]
+T = sys.argv[6]
 
 
 if not (n.isdigit() and spacing.isdigit() and dual.isdigit() and T.isdigit()):
