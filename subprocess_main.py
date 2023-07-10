@@ -23,8 +23,9 @@ def main(expe=0, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
 		n_samples = 10
 		dual = 1
 		dim = 2
-		title = 'our-size-' + transform + '-dim-' + str(n_dir) + 'n-samples-' + str(n_samples) + '-dual-' + str(dual) + '-dim-' + str(dim)
+		title = 'our-size-' + transform + '-n-dir-' + str(n_dir) + '-n-samples-' + str(n_samples) + '-dual-' + str(dual) + '-dim-' + str(dim)
 
+	# Experiment 2: critical points
 	if expe == 2:
 		sizes = [1000]
 		n_dir = 100
@@ -34,6 +35,25 @@ def main(expe=0, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
 		n_samples = 10
 		dual = 1
 		title = 'our-crit-pts-' + transform + '-n_dir-' + str(n_dir) + 'n-samples-' + str(n_samples) + '-dual-' + str(dual) + '-dim-' + str(dim)
+
+	# Experiment 3,4: dimension
+	if expe==3: # TODO: Test first
+		sizes = [] # What should the size be?
+		n_dir = 100
+		dim = 3
+		spacings = [50]
+		n_samples = 10
+		dual = 1
+		title = 'our-dim-3-' + transform + '-n_dir-' + str(n_dir) + 'n-samples-' + str(n_samples) + '-dual-' + str(dual) + '-dim-' + str(dim)
+	
+	if expe==4: # TODO: Test first
+		sizes = [] # What should the size be?
+		n_dir = 100 
+		dim = 4
+		spacings = [50]
+		n_samples = 10
+		dual = 1
+		title = 'our-dim-4-' + transform + '-n_dir-' + str(n_dir) + 'n-samples-' + str(n_samples) + '-dual-' + str(dual) + '-dim-' + str(dim)
 
 	# Experiment
 	overwrite_lock = str(np.random.rand())
