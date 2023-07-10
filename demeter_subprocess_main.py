@@ -12,7 +12,8 @@ def main(expe=0):
 		spacings = [size//20 for size in sizes]
 		n_samples = 1
 		dim = 2
-		title = 'dem-test'
+		T = 50
+		title = 'dem-test' + '-T-' + str(T)
 
 	# Experiment 1: size 
 	if expe == 1:
@@ -21,7 +22,8 @@ def main(expe=0):
 		spacings = [size//20 for size in sizes]
 		n_samples = 10
 		dim = 2
-		title = 'dem-size-' + transform + '-dim-' + str(n_dir) + 'n-samples-' + str(n_samples) + '-dim-' + str(dim)
+		T=50
+		title = 'dem-size-' + transform + '-dim-' + str(n_dir) + 'n-samples-' + str(n_samples) + '-dim-' + str(dim) + '-T-' + str(T)
 
 	# Experiment 2: critical points
 	if expe == 2:
@@ -31,7 +33,8 @@ def main(expe=0):
 		n_crit_pts = [10, 25, 50, 100, 200, 500, 1000, 5000, 10000, 50000, 100000, 500000]
 		spacings = num_crit_to_spacing(dim, sizes[0], n_crit_pts)
 		n_samples = 10
-		title = 'dem-crit-pts-' + transform + '-n_dir-' + str(n_dir) + 'n-samples-' + str(n_samples) + '-dim-' + str(dim)
+		T=50
+		title = 'dem-crit-pts-' + transform + '-n_dir-' + str(n_dir) + 'n-samples-' + str(n_samples) + '-dim-' + str(dim) + '-T-' + str(T)
 
 	# Experiment
 	overwrite_lock = str(np.random.rand())
