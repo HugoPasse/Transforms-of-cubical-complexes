@@ -4,13 +4,12 @@ import os
 import subprocess
 
 def main(range_val, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
-	size = 10 # What should the size be?
-	# size = 1000 # What should the size be? 
+	size = 1000 
 	n_dir = 100 
 	dim = 2
 	n_samples = 10
 	dual = 1
-	title = 'our-range-values-' + str(range_val) + '-' + transform + '-n_dir-' + str(n_dir) + 'n-samples-' + str(n_samples) + '-dual-' + str(dual) + '-dim-' + str(dim)
+	title = 'our-range-values-uniform-' + str(range_val) + '-' + transform + '-n_dir-' + str(n_dir) + '-n-samples-' + str(n_samples) + '-dual-' + str(dual) + '-dim-' + str(dim)
 
 	# Experiment
 	overwrite_lock = str(np.random.rand())
@@ -52,11 +51,9 @@ def main(range_val, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
 	print('Results saved in:', path_to_savings)
 
 #%%
-for transform in ['HT', 'Radon', 'ECT']:
-	for range_val in [2, 5, 10]:
-		main(range_val, transform)
 # for transform in ['HT', 'Radon', 'ECT']:
-# 	for range_val in [2, 5, 10, 50, 100, 200, 300, 500, 1000]:
+# 	for range_val in [2, 5, 10]:
 # 		main(range_val, transform)
-
-# TODO: test beforehand
+for transform in ['HT', 'Radon', 'ECT']:
+	for range_val in [2, 5, 10, 50, 100, 200, 300, 500, 1000]:
+		main(range_val, transform)
