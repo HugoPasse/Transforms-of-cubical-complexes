@@ -10,7 +10,7 @@ def main(expe=0):
 		sizes = [40, 60, 80]
 		n_dir = 10
 		spacings = [size//20 for size in sizes]
-		n_samples = 1
+		n_samples = 2
 		dim = 2
 		T = 50
 		title = 'dem-test' + '-T-' + str(T)
@@ -22,7 +22,7 @@ def main(expe=0):
 		spacings = [size//20 for size in sizes]
 		n_samples = 10
 		dim = 2
-		T=50
+		T=100
 		title = 'dem-size-' + transform + '-dim-' + str(n_dir) + 'n-samples-' + str(n_samples) + '-dim-' + str(dim) + '-T-' + str(T)
 
 	# Experiment 2: critical points
@@ -33,7 +33,7 @@ def main(expe=0):
 		n_crit_pts = [10, 25, 50, 100, 200, 500, 1000, 5000, 10000, 50000, 100000, 500000]
 		spacings = num_crit_to_spacing(dim, sizes[0], n_crit_pts)
 		n_samples = 10
-		T=50
+		T=100
 		title = 'dem-crit-pts-' + transform + '-n_dir-' + str(n_dir) + 'n-samples-' + str(n_samples) + '-dim-' + str(dim) + '-T-' + str(T)
 
 	# Experiment
@@ -76,5 +76,5 @@ def main(expe=0):
 
 #%%
 main(expe=0)
-# for expe in [0,1,2]:
-# 	main(expe)
+main(expe=2)
+main(expe=1)
