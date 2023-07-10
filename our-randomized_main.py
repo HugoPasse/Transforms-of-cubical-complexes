@@ -39,15 +39,15 @@ def main(range_val, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
 		cmd = '/usr/bin/time --output=' + path_to_savings + '-total-logs.txt -f "%U %M" python3 our-randomized_mem.py ' +  str(size) + ' ' + str(n_dir) + ' ' + str(dual) + ' ' + str(dim) + ' ' + path_to_savings + ' ' + transform + ' ' + str(range_val)
 		output = subprocess.check_output(cmd, shell=True)
 		temp_res = [float(_.decode()) for _ in output.split()]
-		result[_,i] = np.array([(temp_res[2*_],temp_res[2*_+1]) for _ in range(4)]+[(sum(temp_res[2*_] for _ in range(4)), sum(temp_res[2*_+1] for _ in range(4)))])
-		n_crit_pts[_,i] = np.array([int(temp_res[-2]), int(temp_res[-1])])
+		result[_] = np.array([(temp_res[2*_],temp_res[2*_+1]) for _ in range(4)]+[(sum(temp_res[2*_] for _ in range(4)), sum(temp_res[2*_+1] for _ in range(4)))])
+		n_crit_pts[_] = np.array([int(temp_res[-2]), int(temp_res[-1])])
 		with open(path_to_savings+'-logs.txt', 'a+') as file:
-			file.write(f'\n nbr critical points (cla,ord): {n_crit_pts[_,i]}\n')
-			file.write(f'result:\n{result[_,i]}\n')
+			file.write(f'\n nbr critical points (cla,ord): {n_crit_pts[_]}\n')
+			file.write(f'result:\n{result[_]}\n')
 			file.close()
 		with open(path_to_savings+'-total-logs.txt', 'r') as file:
 			line = file.readline().split()
-			total_ext[_,i] = np.array([float(line[0]), int(line[1])])
+			total_ext[_] = np.array([float(line[0]), int(line[1])])
 	np.savez(path_to_savings, result=result, n_crit_pts=n_crit_pts, total_ext=total_ext)
 	print('Results saved in:', path_to_savings)
 
