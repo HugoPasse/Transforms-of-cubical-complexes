@@ -61,9 +61,8 @@ def main(expe=0):
 			size = sizes[min(len(sizes)-1,i)]
 			spacing = spacings[min(len(spacings)-1,i)]
 			print(f'sample = {_} | size = {size} | spacing = {spacing}')
-			cmd = '/usr/bin/time --output=' + path_to_savings + '-total-logs.txt -f "%U %M" python3 subprocess_mem.py ' +  str(size) + ' ' + str(spacing) + ' ' + str(n_dir) + ' ' + str(dim) + ' ' + path_to_savings + ' ' + str(T)
+			cmd = '/usr/bin/time --output=' + path_to_savings + '-total-logs.txt -f "%U %M" python3 demeter_subprocess_mem.py ' +  str(size) + ' ' + str(spacing) + ' ' + str(n_dir) + ' ' + str(dim) + ' ' + path_to_savings + ' ' + str(T)
 			output = subprocess.check_output(cmd, shell=True)
-			print(output.split())
 			temp_res = [float(_.decode()) for _ in output.split()] 
 			result[_,i] = np.array([(temp_res[2*_],temp_res[2*_+1]) for _ in range(3)]+[(sum(temp_res[2*_] for _ in range(3)), sum(temp_res[2*_+1] for _ in range(3)))])
 			with open(path_to_savings+'-logs.txt', 'a+') as file:
