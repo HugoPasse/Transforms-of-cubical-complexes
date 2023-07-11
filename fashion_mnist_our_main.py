@@ -3,8 +3,8 @@ import numpy as np
 import os
 import subprocess
 
-def main(range_val, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
-	size = 10 
+def main(range_val=256, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
+	size = 60000
 	n_dir = 100 
 	dual = 1
 	title = 'our-fashion_mnist-res-' + str(range_val) + '-' + transform + '-n_dir-' + str(n_dir) + '-dual-' + str(dual)
@@ -50,4 +50,6 @@ def main(range_val, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
 	print('Results saved in:', path_to_savings)
 
 #%%
-main(10, 'HT')
+main('HT')
+main('ECT')
+main('Radon')
