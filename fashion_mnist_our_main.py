@@ -2,7 +2,6 @@
 import numpy as np
 import os
 import subprocess
-import pandas as pd
 
 def main(range_val, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
 	size = 10 

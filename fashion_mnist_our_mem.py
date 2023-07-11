@@ -1,9 +1,9 @@
 import numpy as np
 import embedded_cubical_complex as ecc
-from test_shapes import regular_points
 import sys
 import time
 import os, psutil
+import pandas as pd
 process = psutil.Process(os.getpid())
 
 n = sys.argv[1] 
