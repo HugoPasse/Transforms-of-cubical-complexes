@@ -3,7 +3,7 @@ import numpy as np
 import os
 import subprocess
 
-def main(range_val=256, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
+def main(transform='HT', range_val=256): # transform = 'ECT' or 'Radon' or 'HT'
 	size = 60000
 	n_dir = 100 
 	dual = 1
