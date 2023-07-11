@@ -51,4 +51,4 @@ def main(range_val, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
 	print('Results saved in:', path_to_savings)
 
 #%%
-main(10, transform)
+main(10, 'HT')
