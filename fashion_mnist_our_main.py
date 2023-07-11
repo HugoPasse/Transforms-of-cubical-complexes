@@ -30,7 +30,7 @@ def main(range_val, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
 		file.write('(time (s),memory (KB)): \n init cplx \n upper_star \n pre_processing \n transform \n total\n\n')
 		file.close()
 	result = np.zeros((5,2))
-	n_crit_pts = np.zeros(size, 2)
+	n_crit_pts = np.zeros((size, 2))
 	total_ext = np.zeros(2)
 	for _ in range(size):
 		print(f'index = {_}')
