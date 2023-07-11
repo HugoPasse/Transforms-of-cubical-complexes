@@ -40,7 +40,7 @@ def main(range_val, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
 		n_crit_pts[_] = np.array([int(temp_res[-2]), int(temp_res[-1])])
 		with open(path_to_savings+'-logs.txt', 'a+') as file:
 			file.write(f'\n nbr critical points (cla,ord): {n_crit_pts[_]}\n')
-			file.write(f'result:\n{result[_]}\n')
+			file.write(f'result so far:\n{result}\n')
 			file.close()
 		with open(path_to_savings+'-total-logs.txt', 'r') as file:
 			line = file.readline().split()
