@@ -28,8 +28,8 @@ data = pd.read_csv('fashion_mnist/fashion-mnist_train.csv', skiprows=lambda x:x 
 time_cplx, time_preproc, time_transform, mem_cplx, mem_preproc, mem_transform = 0, 0, 0, 0, 0, 0
 
 if full:
-	img = (data.iloc[:,1:]).to_numpy().reshape((28,28))
-	values = np.unique(img)
+	X = (data.iloc[:,1:]).to_numpy().reshape((28,28))
+	values = np.unique(X)
 	for val_pix in values:
 		img = np.zeros_like(X)
 		img[X >  val_pix] = 1
