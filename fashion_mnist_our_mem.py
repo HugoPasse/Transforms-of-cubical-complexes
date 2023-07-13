@@ -1,44 +1,37 @@
 import numpy as np
 import embedded_cubical_complex as ecc
-from test_shapes import regular_points
 import sys
 import time
 import os, psutil
+import pandas as pd
 process = psutil.Process(os.getpid())
 
-if len(sys.argv) != 8:
-	print('Incorrect arguments')
-	exit()
-
 n = sys.argv[1] 
-spacing = sys.argv[2]
-n_dir = sys.argv[3]
-dual = sys.argv[4]
-dim = sys.argv[5]
-path_to_savings = sys.argv[6]
-transform = sys.argv[7]
-
-
-if not (n.isdigit() and spacing.isdigit() and dual.isdigit()):
-	print("Arguments must be integers")
-	exit()
-
-if not path_to_savings.isprintable():
-	print("path_to_savings must be printable")
-	exit()
-
-if not transform in ['ECT', 'Radon', 'HT']:
-	print('transform must be either ECT, Radon or HT')
-	exit()
+n_dir = sys.argv[2]
+dual = sys.argv[3]
+path_to_savings = sys.argv[4]
+transform = sys.argv[5]
+range_val = sys.argv[6]
+index = sys.argv[7]
 
 n = int(n)
-spacing = int(spacing)
 n_dir = int(n_dir)
 dual = int(dual)
-dim = int(dim)
+num_thresholds = int(range_val)
+index = int(index) + 1
 if not dual == 0 : dual = 1
 
-img = np.array(regular_points((n,n),np.array([spacing,spacing]),np.array([spacing,spacing])))
+data = pd.read_csv('fashion_mnist/fashion-mnist_train.csv', skiprows=lambda x:x not in [0,index])
+img = (data.iloc[:,1:]).to_numpy().reshape((28,28))
+
+# X = (data.iloc[:,1:]).to_numpy().reshape((28,28))
+# quantiles = [k/(num_thresholds+1) for k in range(1,num_thresholds+1)]
+# values = np.unique(X)[1:]
+# val_quantiles = [np.quantile(values, q) for q in quantiles]
+
+# img = np.zeros_like(X)
+# for val_pix in val_quantiles:
+# 	img[X>val_pix] = val_pix
 
 # Construct complex
 mtic = process.memory_full_info().uss
@@ -74,15 +67,15 @@ print(f'{time_preproc} {(mtoc-mtic)/1000}', end=' ')
 
 # Computing transform
 value = 0
-directions = np.random.rand(n_dir, dim)
+directions = np.random.rand(n_dir, 2)
 mtic = process.memory_full_info().uss
 tic = time.perf_counter()
 if transform == 'ECT':
 	for i in range(n_dir):
-		value = cplx.compute_euler_caracteristic_transform(np.random.rand(dim))
+		value = cplx.compute_euler_caracteristic_transform(np.random.rand(2))
 elif transform == 'Radon':
 	for i in range(n_dir):
-		value = cplx.compute_radon_transform(np.random.rand(dim))
+		value = cplx.compute_radon_transform(np.random.rand(2))
 elif transform == 'HT':
 	value = cplx.compute_hybrid_transform('cos', directions, num_jobs=1)
 toc = time.perf_counter()

@@ -6,20 +6,16 @@ import time
 import os, psutil
 process = psutil.Process(os.getpid())
 
-if len(sys.argv) != 8:
-	print('Incorrect arguments')
-	exit()
-
 n = sys.argv[1] 
-spacing = sys.argv[2]
-n_dir = sys.argv[3]
-dual = sys.argv[4]
-dim = sys.argv[5]
-path_to_savings = sys.argv[6]
-transform = sys.argv[7]
+n_dir = sys.argv[2]
+dual = sys.argv[3]
+dim = sys.argv[4]
+path_to_savings = sys.argv[5]
+transform = sys.argv[6]
+range_val = sys.argv[7]
 
 
-if not (n.isdigit() and spacing.isdigit() and dual.isdigit()):
+if not (n.isdigit() and dual.isdigit() and range_val.isdigit()):
 	print("Arguments must be integers")
 	exit()
 
@@ -32,13 +28,13 @@ if not transform in ['ECT', 'Radon', 'HT']:
 	exit()
 
 n = int(n)
-spacing = int(spacing)
 n_dir = int(n_dir)
 dual = int(dual)
 dim = int(dim)
+range_val = int(range_val)
 if not dual == 0 : dual = 1
 
-img = np.array(regular_points((n,n),np.array([spacing,spacing]),np.array([spacing,spacing])))
+img = np.random.randint(low=0, high=range_val, size=tuple([n]*dim))
 
 # Construct complex
 mtic = process.memory_full_info().uss
