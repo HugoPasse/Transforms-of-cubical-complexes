@@ -4,6 +4,7 @@
 #include <thread>
 #include <chrono>
 #include <time.h>
+#include <stdexcept>
 
 #include "Radon_transform.h"
 #include "Euler_caracteristic_transform.h"
@@ -473,7 +474,7 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
             for(int i = 0; i < (1 << dim)-1; i++){  //Looping on all of the adjacent cell in direction
                 //Finding the next adjacent cell 
                 int k = 0;
-                while(tmp[k] == 1){             
+                while(tmp[k] == 1){
                     tmp[k] = 0;
                     coordinates[k] -= reverse_vector * direction[k];
                     simplex_dim_sign *= -1;     //Gives us the sign to put in front (e.g : edges must be taken positively were faces must be taken negatively (it is the oppostie to the formulae due to the intersection with the hyperplane that transforms n dimensional cells in n-1 dimensional cells))
@@ -503,9 +504,13 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
             if(are_ord_crit_pts_computed == 0){
                 compute_ordinary_critical_vertices();
             }
-
             int index = get_vector_index(e);
             double sum = 0.0;
+
+            if(e.size() != this->dimension()){
+                std::cout << "Vector dimension : " <<  e.size() << ", complex dimension : " << this->dimension() << std::endl;
+                throw std::invalid_argument("Received vector which size that does not match complex dimension");
+            }
 
             for(std::size_t i = 0; i < ord_crit_pts[index].size(); i++){   //Looping on critical vertices
                 sum -=  ord_crit_val[index][i] * kernel(std::inner_product(e.begin(),e.end(),embedding[embedding_index[ord_crit_pts[index][i]]].begin(),0.0));
