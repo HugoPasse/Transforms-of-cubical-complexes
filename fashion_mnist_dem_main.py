@@ -3,11 +3,11 @@ import numpy as np
 import os
 import subprocess
 
-def main(T=50, range_val=256):
+def main(T=50, full=1):
 	size = 2
 	n_dir = 100 
 	dual = 1
-	title = 'dem-fashion_mnist-res-' + str(range_val) + '-' + str(T) + '-n_dir-' + str(n_dir) + '-dual-' + str(dual)
+	title = 'dem-fashion_mnist-full-' + str(full) + '-' + str(T) + '-n_dir-' + str(n_dir) + '-dual-' + str(dual)
 
 	# Experiment
 	overwrite_lock = str(np.random.rand())
@@ -17,13 +17,13 @@ def main(T=50, range_val=256):
 	print('size:', size)
 	print('nbre directions:', n_dir)
 	print('dual:', dual)
-	print('range of values of img:', range_val)
+	print('full range of values:', full)
 
 	with open(path_to_savings + '-logs.txt', 'a+') as file:
 		file.write('############\n\n')
 		file.write('Demeter\n')
 		file.write(f'T: {T}\n')
-		file.write(f'range_val: {range_val}\n')
+		file.write(f'full range of values: {full}\n')
 		file.write(f'size: {size}\n')
 		file.write(f'nbre directions: {n_dir}\n')
 		file.write(f'dual: {dual}\n')
@@ -33,7 +33,7 @@ def main(T=50, range_val=256):
 	total_ext = np.zeros(2)
 	for _ in range(size):
 		print(f'index = {_}')
-		cmd = '/usr/bin/time --output=' + path_to_savings + '-total-logs.txt -f "%U %M" python3 fashion_mnist_our_mem.py ' +  str(size) + ' ' + str(n_dir) + ' ' + str(dual) + ' ' + path_to_savings + ' ' + str(T) + ' ' + str(range_val) + ' ' + str(_)
+		cmd = '/usr/bin/time --output=' + path_to_savings + '-total-logs.txt -f "%U %M" python3 fashion_mnist_our_mem.py ' +  str(size) + ' ' + str(n_dir) + ' ' + str(dual) + ' ' + path_to_savings + ' ' + str(T) + ' ' + str(full) + ' ' + str(_)
 		output = subprocess.check_output(cmd, shell=True)
 		temp_res = [float(_.decode()) for _ in output.split()]
 		result += np.array([(temp_res[2*_],temp_res[2*_+1]) for _ in range(3)]+[(sum(temp_res[2*_] for _ in range(3)), sum(temp_res[2*_+1] for _ in range(3)))])
@@ -48,4 +48,4 @@ def main(T=50, range_val=256):
 	print('Results saved in:', path_to_savings)
 
 #%%
-main(T=50, range_val=5)
+main(T=50, full=1)

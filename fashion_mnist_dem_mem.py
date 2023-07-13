@@ -11,29 +11,30 @@ n_dir = sys.argv[2]
 dual = sys.argv[3]
 path_to_savings = sys.argv[4]
 T = sys.argv[5]
-range_val = sys.argv[6]
+full = sys.argv[6]
 index = sys.argv[7]
 
 n = int(n)
 n_dir = int(n_dir)
 dual = int(dual)
+full = int(full)
 T = int(T)
-num_thresholds = int(range_val)
 index = int(index) + 1
 if not dual == 0 : dual = 1
+if not full == 0 : full = 1
 
 data = pd.read_csv('fashion_mnist/fashion-mnist_train.csv', skiprows=lambda x:x not in [0,index])
 
-# Full
-# img = (data.iloc[:,1:]).to_numpy().reshape((28,28))
-# values = np.unique(img)
 
-# Half
-X = (data.iloc[:,1:]).to_numpy().reshape((28,28))
-values = np.unique(X)
-med = np.quantile(values, 0.5)
-img = np.zeros_like(X)
-img[X>med] = 1
+if full:
+	img = (data.iloc[:,1:]).to_numpy().reshape((28,28))
+	values = np.unique(img)
+else:
+	X = (data.iloc[:,1:]).to_numpy().reshape((28,28))
+	values = np.unique(X)
+	med = np.quantile(values, 0.5)
+	img = np.zeros_like(X)
+	img[X>med] = 1
 
 time_cplx, time_preproc, time_transform, mem_cplx, mem_preproc, mem_transform = 0, 0, 0, 0, 0, 0
 
