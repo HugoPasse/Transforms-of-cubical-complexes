@@ -3,8 +3,8 @@ import numpy as np
 import os
 import subprocess
 
-def main(T=50, full=1):
-	size = 2
+def main(T=100, full=1):
+	size = 60000
 	n_dir = 100 
 	dual = 1
 	title = 'dem-fashion_mnist-full-' + str(full) + '-' + str(T) + '-n_dir-' + str(n_dir) + '-dual-' + str(dual)
@@ -48,4 +48,5 @@ def main(T=50, full=1):
 	print('Results saved in:', path_to_savings)
 
 #%%
-main(T=50, full=1)
+main(T=100, full=0)
+main(T=100, full=1)
