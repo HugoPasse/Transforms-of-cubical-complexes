@@ -37,8 +37,8 @@ def main(expe=0, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
 		title = 'our-crit-pts-' + transform + '-n_dir-' + str(n_dir) + 'n-samples-' + str(n_samples) + '-dual-' + str(dual) + '-dim-' + str(dim)
 
 	# Experiment 3,4: dimension
-	if expe==3: # TODO: Test first
-		sizes = [292] # What should the size be?
+	if expe==3:
+		sizes = [292]
 		n_dir = 100
 		dim = 3
 		spacings = [14]
@@ -46,14 +46,32 @@ def main(expe=0, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
 		dual = 1
 		title = 'our-dim-3-' + transform + '-n_dir-' + str(n_dir) + 'n-samples-' + str(n_samples) + '-dual-' + str(dual) + '-dim-' + str(dim)
 	
-	if expe==4: # TODO: Test first
-		sizes = [70] # What should the size be?
+	if expe==4:
+		sizes = [70]
 		n_dir = 100 
 		dim = 4
 		spacings = [3]
 		n_samples = 10
 		dual = 1
 		title = 'our-dim-4-' + transform + '-n_dir-' + str(n_dir) + 'n-samples-' + str(n_samples) + '-dual-' + str(dual) + '-dim-' + str(dim)
+
+	if expe==5:
+		sizes = [30]
+		n_dir = 100 
+		dim = 5
+		spacings = [1]
+		n_samples = 10
+		dual = 1
+		title = 'our-dim-5-' + transform + '-n_dir-' + str(n_dir) + 'n-samples-' + str(n_samples) + '-dual-' + str(dual) + '-dim-' + str(dim)
+	
+	if expe==6:
+		sizes = [17]
+		n_dir = 100 
+		dim = 6
+		spacings = [1]
+		n_samples = 10
+		dual = 1
+		title = 'our-dim-6-' + transform + '-n_dir-' + str(n_dir) + 'n-samples-' + str(n_samples) + '-dual-' + str(dual) + '-dim-' + str(dim)
 
 	# Experiment
 	overwrite_lock = str(np.random.rand())
@@ -107,3 +125,5 @@ def main(expe=0, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
 for transform in ['HT', 'Radon', 'ECT']:
 	main(3,transform)
 	main(4,transform)
+	main(5,transform)
+	main(6,transform)

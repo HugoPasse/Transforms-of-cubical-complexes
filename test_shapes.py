@@ -52,7 +52,55 @@ def regular_points(sizes, pt_size, pt_spacing, value=1, default_value=0):
 			else:
 				arr.append(default_value)
 		arrays.append(np.array(arr))
-	return np.outer(arrays[0],arrays[1])
+	a = np.outer(arrays[0],arrays[1])
+	for i in range(2, len(sizes)):
+		a = np.tensordot(a, arrays[i], axes=0)
+	return a
+	# if len(sizes)==3:
+	# 	x = arrays[0]
+	# 	a = np.outer(x,arrays[1])
+	# 	b = np.tensordot(a,x,axes=0)
+	# 	return b
+	# if len(sizes)==4:
+	# 	x = arrays[0]
+	# 	a = np.outer(x,arrays[1])
+	# 	b = np.tensordot(a,x,axes=0)
+	# 	c = np.tensordot(b,x,axes=0)
+	# 	return c
+	# if len(sizes)==5:
+	# 	x = arrays[0]
+	# 	a = np.outer(x,arrays[1])
+	# 	b = np.tensordot(a,x,axes=0)
+	# 	c = np.tensordot(b,x,axes=0)
+	# 	d = np.tensordot(c,x,axes=0)
+	# 	return d
+	# if len(sizes)==6:
+	# 	x = arrays[0]
+	# 	a = np.outer(x,arrays[1])
+	# 	b = np.tensordot(a,x,axes=0)
+	# 	c = np.tensordot(b,x,axes=0)
+	# 	d = np.tensordot(c,x,axes=0)
+	# 	e = np.tensordot(d,x,axes=0)
+	# 	return e
+	# if len(sizes)==7:
+	# 	x = arrays[0]
+	# 	a = np.outer(x,arrays[1])
+	# 	b = np.tensordot(a,x,axes=0)
+	# 	c = np.tensordot(b,x,axes=0)
+	# 	d = np.tensordot(c,x,axes=0)
+	# 	e = np.tensordot(d,x,axes=0)
+	# 	f = np.tensordot(e,x,axes=0)
+	# 	return f
+	# if len(sizes)==8:
+	# 	x = arrays[0]
+	# 	a = np.outer(x,arrays[1])
+	# 	b = np.tensordot(a,x,axes=0)
+	# 	c = np.tensordot(b,x,axes=0)
+	# 	d = np.tensordot(c,x,axes=0)
+	# 	e = np.tensordot(d,x,axes=0)
+	# 	f = np.tensordot(e,x,axes=0)
+	# 	g = np.tensordot(f,x,axes=0)
+	# 	return g
 
 def sphere(sizes, radius, thickness, value=1, default_value=0):
 	arr = np.full(sizes,default_value)

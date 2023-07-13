@@ -38,7 +38,7 @@ dual = int(dual)
 dim = int(dim)
 if not dual == 0 : dual = 1
 
-img = np.array(regular_points((n,n),np.array([spacing,spacing]),np.array([spacing,spacing])))
+img = np.array(regular_points(tuple([n]*dim),np.array([spacing]*dim),np.array([spacing]*dim)))
 
 # Construct complex
 mtic = process.memory_full_info().uss
