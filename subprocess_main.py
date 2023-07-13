@@ -38,19 +38,19 @@ def main(expe=0, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
 
 	# Experiment 3,4: dimension
 	if expe==3: # TODO: Test first
-		sizes = [] # What should the size be?
+		sizes = [292] # What should the size be?
 		n_dir = 100
 		dim = 3
-		spacings = [50]
+		spacings = [14]
 		n_samples = 10
 		dual = 1
 		title = 'our-dim-3-' + transform + '-n_dir-' + str(n_dir) + 'n-samples-' + str(n_samples) + '-dual-' + str(dual) + '-dim-' + str(dim)
 	
 	if expe==4: # TODO: Test first
-		sizes = [] # What should the size be?
+		sizes = [70] # What should the size be?
 		n_dir = 100 
 		dim = 4
-		spacings = [50]
+		spacings = [3]
 		n_samples = 10
 		dual = 1
 		title = 'our-dim-4-' + transform + '-n_dir-' + str(n_dir) + 'n-samples-' + str(n_samples) + '-dual-' + str(dual) + '-dim-' + str(dim)
@@ -99,6 +99,11 @@ def main(expe=0, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
 	print('Results saved in:', path_to_savings)
 
 #%%
-for expe in [0,1,2]:
-	for transform in ['HT', 'Radon', 'ECT']:
-		main(expe,transform)
+# for expe in [0,1,2]:
+# 	for transform in ['HT', 'Radon', 'ECT']:
+# 		main(expe,transform)
+
+#%%
+for transform in ['HT', 'Radon', 'ECT']:
+	main(3,transform)
+	main(4,transform)
