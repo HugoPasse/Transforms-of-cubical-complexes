@@ -71,6 +71,7 @@ def main(expe=0):
 			with open(path_to_savings+'-total-logs.txt', 'r') as file:
 				line = file.readline().split()
 				total_ext[_,i] = np.array([float(line[0]), int(line[1])])
+	os.remove(path_to_savings + '-total-logs.txt')
 	np.savez(path_to_savings, result=result, total_ext=total_ext)
 	print('Results saved in:', path_to_savings)
 
