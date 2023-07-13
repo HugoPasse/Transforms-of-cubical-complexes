@@ -24,14 +24,20 @@ if not dual == 0 : dual = 1
 
 data = pd.read_csv('fashion_mnist/fashion-mnist_train.csv', skiprows=lambda x:x not in [0,index])
 
+# Full
+# img = (data.iloc[:,1:]).to_numpy().reshape((28,28))
+# values = np.unique(img)
+
+# Half
 X = (data.iloc[:,1:]).to_numpy().reshape((28,28))
-quantiles = [k/(num_thresholds+1) for k in range(1,num_thresholds+1)]
-values = np.unique(X)[1:]
-val_quantiles = [np.quantile(values, q) for q in quantiles]
+values = np.unique(X)
+med = np.quantile(values, 0.5)
+img = np.zeros_like(X)
+img[X>med] = 1
 
 time_cplx, time_preproc, time_transform, mem_cplx, mem_preproc, mem_transform = 0, 0, 0, 0, 0, 0
 
-for val_pix in val_quantiles:
+for val_pix in values:
 	img = np.zeros_like(X)
 	img[X >  val_pix] = 1
 	img[X <= val_pix] = 0

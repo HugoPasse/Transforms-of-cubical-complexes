@@ -4,7 +4,7 @@ import os
 import subprocess
 
 def main(T=50, range_val=256):
-	size = 1
+	size = 2
 	n_dir = 100 
 	dual = 1
 	title = 'dem-fashion_mnist-res-' + str(range_val) + '-' + str(T) + '-n_dir-' + str(n_dir) + '-dual-' + str(dual)
