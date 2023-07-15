@@ -72,6 +72,26 @@ def main(expe=0, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
 		n_samples = 10
 		dual = 1
 		title = 'our-dim-6-' + transform + '-n_dir-' + str(n_dir) + 'n-samples-' + str(n_samples) + '-dual-' + str(dual) + '-dim-' + str(dim)
+	
+	# Experiment 7: size dim 3
+	if expe == 7:
+		sizes = [40, 100, 200, 400, 500, 1000, 5000]
+		n_dir = 100
+		spacings = [size//20 for size in sizes]
+		n_samples = 10
+		dual = 1
+		dim = 2
+		title = 'our-size-' + transform + '-n-dir-' + str(n_dir) + '-n-samples-' + str(n_samples) + '-dual-' + str(dual) + '-dim-' + str(dim)
+
+	# Experiment 8: critical points dim 3
+	if expe == 8:
+		sizes = [500]
+		n_dir = 100
+		dim = 3
+		spacings = [1, 2, 3, 4, 5, 6, 7, 10, 20, 30, 50, 60, 70, 100, 200] # n_crit_pts = [15625000, 1953125, 571787, 238328, 125000, 68921, 42875, 15625, 1728, 512, 125, 64, 27, 8, 1]
+		n_samples = 10
+		dual = 1
+		title = 'our-crit-pts-' + transform + '-n_dir-' + str(n_dir) + 'n-samples-' + str(n_samples) + '-dual-' + str(dual) + '-dim-' + str(dim)
 
 	# Experiment
 	overwrite_lock = str(np.random.rand())
@@ -113,6 +133,7 @@ def main(expe=0, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
 			with open(path_to_savings+'-total-logs.txt', 'r') as file:
 				line = file.readline().split()
 				total_ext[_,i] = np.array([float(line[0]), int(line[1])])
+	os.remove(path_to_savings + '-total-logs.txt')
 	np.savez(path_to_savings, result=result, n_crit_pts=n_crit_pts, total_ext=total_ext)
 	print('Results saved in:', path_to_savings)
 
@@ -122,8 +143,13 @@ def main(expe=0, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
 # 		main(expe,transform)
 
 #%%
+# for transform in ['HT', 'Radon', 'ECT']:
+# 	main(3,transform)
+# 	main(4,transform)
+# 	main(5,transform)
+# 	main(6,transform)
+
+#%%
 for transform in ['HT', 'Radon', 'ECT']:
-	main(3,transform)
-	main(4,transform)
-	main(5,transform)
-	main(6,transform)
+	main(7,transform)
+	main(8,transform)
