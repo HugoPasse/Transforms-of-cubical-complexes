@@ -15,7 +15,7 @@ def main(expe=0, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
 		dim = 2
 		title = 'test'
 
-	# Experiment 1: size 
+	# Experiment 1: size
 	if expe == 1:
 		sizes = [40, 100, 500, 1000, 5000]
 		n_dir = 100
@@ -27,14 +27,24 @@ def main(expe=0, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
 
 	# Experiment 2: critical points
 	if expe == 2:
-		sizes = [1000]
+		sizes = [2000]
 		n_dir = 100
 		dim = 2
-		n_crit_pts = [10, 25, 50, 100, 200, 500, 1000, 5000, 10000, 50000, 100000, 500000]
-		spacings = num_crit_to_spacing(dim, sizes[0], n_crit_pts)
+		spacings = [400, 300, 250, 200, 150, 125, 110, 100, 90, 80, 70, 60, 50, 45, 42, 40, 35, 30, 25, 20, 15, 10, 9, 8, 7, 6, 5, 4, 3, 2] # n_crit_pts = [4, 9, 16, 25, 36, 64, 81, 100, 121, 144, 196, 256, 400, 484, 529, 625, 784, 1089, 1600, 2500, 4356, 10000, 12321, 15625, 20164, 27556, 40000, 62500, 110889, 250000]
 		n_samples = 10
 		dual = 1
 		title = 'our-crit-pts-' + transform + '-n_dir-' + str(n_dir) + 'n-samples-' + str(n_samples) + '-dual-' + str(dual) + '-dim-' + str(dim)
+
+	# # Experiment 2: critical points (old)
+	# if expe == 2:
+	# 	sizes = [1000]
+	# 	n_dir = 100
+	# 	dim = 2
+	# 	n_crit_pts = [10, 25, 50, 100, 200, 500, 1000, 5000, 10000, 50000, 100000, 500000]
+	# 	spacings = num_crit_to_spacing(dim, sizes[0], n_crit_pts)
+	# 	n_samples = 10
+	# 	dual = 1
+	# 	title = 'our-crit-pts-' + transform + '-n_dir-' + str(n_dir) + 'n-samples-' + str(n_samples) + '-dual-' + str(dual) + '-dim-' + str(dim)
 
 	# Experiment 3,4: dimension
 	if expe==3:
@@ -80,7 +90,7 @@ def main(expe=0, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
 		spacings = [size//20 for size in sizes]
 		n_samples = 10
 		dual = 1
-		dim = 2
+		dim = 3
 		title = 'our-size-' + transform + '-n-dir-' + str(n_dir) + '-n-samples-' + str(n_samples) + '-dual-' + str(dual) + '-dim-' + str(dim)
 
 	# Experiment 8: critical points dim 3
@@ -151,5 +161,4 @@ def main(expe=0, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
 
 #%%
 for transform in ['HT', 'Radon', 'ECT']:
-	main(7,transform)
-	main(8,transform)
+	main(2,transform)
