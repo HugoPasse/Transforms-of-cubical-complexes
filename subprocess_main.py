@@ -112,6 +112,7 @@ def main(expe=0, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
 	print('spacings:\n', spacings)
 	print('nbre directions:', n_dir)
 	print('dual:', dual)
+	print('dim:', dim)
 
 	with open(path_to_savings + '-logs.txt', 'a+') as file:
 		file.write('############\n\n')
@@ -120,6 +121,7 @@ def main(expe=0, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
 		file.write(f'spacings:\n{spacings}\n')
 		file.write(f'nbre directions: {n_dir}\n')
 		file.write(f'dual: {dual}\n')
+		file.write(f'dim: {dim}\n')
 		file.write('(time (s),memory (KB)): \n init cplx \n upper_star \n pre_processing \n transform \n total \n ext total \n\n')
 		file.close()
 	m = max(len(sizes),len(spacings))

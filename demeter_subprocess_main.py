@@ -30,11 +30,21 @@ def main(expe=0):
 		sizes = [1000]
 		n_dir = 100
 		dim = 2
-		n_crit_pts = [10, 25, 50, 100, 200, 500, 1000, 5000, 10000, 50000, 100000, 500000]
-		spacings = num_crit_to_spacing(dim, sizes[0], n_crit_pts)
+		spacings = [400, 300, 250, 200, 150, 125, 110, 100, 90, 80, 70, 60, 50, 45, 42, 40, 35, 30, 25, 20, 15, 10, 9, 8, 7, 6, 5, 4, 3, 2] # n_crit_pts = [4, 9, 16, 25, 36, 64, 81, 100, 121, 144, 196, 256, 400, 484, 529, 625, 784, 1089, 1600, 2500, 4356, 10000, 12321, 15625, 20164, 27556, 40000, 62500, 110889, 250000]
 		n_samples = 10
 		T=100
 		title = 'dem-crit-pts-n_dir-' + str(n_dir) + 'n-samples-' + str(n_samples) + '-dim-' + str(dim) + '-T-' + str(T)
+
+	# # Experiment 2: critical points (old)
+	# if expe == 2:
+	# 	sizes = [1000]
+	# 	n_dir = 100
+	# 	dim = 2
+	# 	n_crit_pts = [10, 25, 50, 100, 200, 500, 1000, 5000, 10000, 50000, 100000, 500000]
+	# 	spacings = num_crit_to_spacing(dim, sizes[0], n_crit_pts)
+	# 	n_samples = 10
+	# 	T=100
+	# 	title = 'dem-crit-pts-n_dir-' + str(n_dir) + 'n-samples-' + str(n_samples) + '-dim-' + str(dim) + '-T-' + str(T)
 
 	# Experiment
 	overwrite_lock = str(np.random.rand())
@@ -44,6 +54,7 @@ def main(expe=0):
 	print('sizes:', sizes)
 	print('spacings:\n', spacings)
 	print('nbre directions:', n_dir)
+	print('dim:', dim)
 
 	with open(path_to_savings + '-logs.txt', 'a+') as file:
 		file.write('############\n\n')
@@ -51,6 +62,7 @@ def main(expe=0):
 		file.write(f'sizes: {sizes}\n')
 		file.write(f'spacings:\n{spacings}\n')
 		file.write(f'nbre directions: {n_dir}\n')
+		file.write(f'dim: {dim}\n')
 		file.write('(time (s),memory (KB)): \n init cplx \n complexifying \n transform \n total \n\n')
 		file.close()
 	m = max(len(sizes),len(spacings))
@@ -76,6 +88,4 @@ def main(expe=0):
 	print('Results saved in:', path_to_savings)
 
 #%%
-main(expe=0)
 main(expe=2)
-main(expe=1)
