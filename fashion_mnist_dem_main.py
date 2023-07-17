@@ -4,7 +4,7 @@ import os
 import subprocess
 
 def main(T=100, full=1):
-	size = 60000
+	size = 2
 	n_dir = 100 
 	dual = 1
 	title = 'dem-fashion_mnist-full-' + str(full) + '-' + str(T) + '-n_dir-' + str(n_dir) + '-dual-' + str(dual)
@@ -33,6 +33,7 @@ def main(T=100, full=1):
 	total_ext = np.zeros(2)
 	for _ in range(size):
 		print(f'index = {_}')
+		# cmd = 'python3 fashion_mnist_dem_mem.py ' +  str(size) + ' ' + str(n_dir) + ' ' + str(dual) + ' ' + path_to_savings + ' ' + str(T) + ' ' + str(full) + ' ' + str(_)
 		cmd = '/usr/bin/time --output=' + path_to_savings + '-total-logs.txt -f "%U %M" python3 fashion_mnist_our_mem.py ' +  str(size) + ' ' + str(n_dir) + ' ' + str(dual) + ' ' + path_to_savings + ' ' + str(T) + ' ' + str(full) + ' ' + str(_)
 		output = subprocess.check_output(cmd, shell=True)
 		temp_res = [float(_.decode()) for _ in output.split()]
@@ -49,4 +50,3 @@ def main(T=100, full=1):
 
 #%%
 main(T=100, full=0)
-main(T=100, full=1)

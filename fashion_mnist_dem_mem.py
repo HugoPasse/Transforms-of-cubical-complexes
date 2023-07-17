@@ -1,9 +1,13 @@
 import numpy as np
-import embedded_cubical_complex as ecc
 import sys
 import time
 import os, psutil
 import pandas as pd
+
+import demeter.euler as euler
+import demeter.misc as misc
+import demeter.directions as dirs
+
 process = psutil.Process(os.getpid())
 
 n = sys.argv[1] 
@@ -29,7 +33,7 @@ time_cplx, time_preproc, time_transform, mem_cplx, mem_preproc, mem_transform = 
 
 if full:
 	X = (data.iloc[:,1:]).to_numpy().reshape((28,28))
-	values = np.unique(X)
+	values = np.unique(X)[:-1]
 	for val_pix in values:
 		img = np.zeros_like(X)
 		img[X >  val_pix] = 1
