@@ -22,7 +22,13 @@ index = int(index) + 1
 if not dual == 0 : dual = 1
 
 data = pd.read_csv('fashion_mnist/fashion-mnist_train.csv', skiprows=lambda x:x not in [0,index])
-img = (data.iloc[:,1:]).to_numpy().reshape((28,28))
+# img = (data.iloc[:,1:]).to_numpy().reshape((28,28))
+
+X = (data.iloc[:,1:]).to_numpy().reshape((28,28))
+values = np.unique(X)
+med = np.quantile(values, 0.5)
+img = np.zeros_like(X)
+img[X>med] = 1
 
 # X = (data.iloc[:,1:]).to_numpy().reshape((28,28))
 # quantiles = [k/(num_thresholds+1) for k in range(1,num_thresholds+1)]

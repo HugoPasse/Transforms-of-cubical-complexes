@@ -4,7 +4,7 @@ import os
 import subprocess
 
 def main(transform='HT', range_val=256): # transform = 'ECT' or 'Radon' or 'HT'
-	size = 60000
+	size = 2
 	n_dir = 100 
 	dual = 1
 	title = 'our-fashion_mnist-res-' + str(range_val) + '-' + transform + '-n_dir-' + str(n_dir) + '-dual-' + str(dual)
@@ -33,7 +33,8 @@ def main(transform='HT', range_val=256): # transform = 'ECT' or 'Radon' or 'HT'
 	total_ext = np.zeros(2)
 	for _ in range(size):
 		print(f'index = {_}')
-		cmd = '/usr/bin/time --output=' + path_to_savings + '-total-logs.txt -f "%U %M" python3 fashion_mnist_our_mem.py ' +  str(size) + ' ' + str(n_dir) + ' ' + str(dual) + ' ' + path_to_savings + ' ' + transform + ' ' + str(range_val) + ' ' + str(_)
+		cmd = 'python3 fashion_mnist_our_mem.py ' +  str(size) + ' ' + str(n_dir) + ' ' + str(dual) + ' ' + path_to_savings + ' ' + transform + ' ' + str(range_val) + ' ' + str(_)
+		# cmd = '/usr/bin/time --output=' + path_to_savings + '-total-logs.txt -f "%U %M" python3 fashion_mnist_our_mem.py ' +  str(size) + ' ' + str(n_dir) + ' ' + str(dual) + ' ' + path_to_savings + ' ' + transform + ' ' + str(range_val) + ' ' + str(_)
 		output = subprocess.check_output(cmd, shell=True)
 		temp_res = [float(_.decode()) for _ in output.split()]
 		result += np.array([(temp_res[2*_],temp_res[2*_+1]) for _ in range(4)]+[(sum(temp_res[2*_] for _ in range(4)), sum(temp_res[2*_+1] for _ in range(4)))])
@@ -42,14 +43,16 @@ def main(transform='HT', range_val=256): # transform = 'ECT' or 'Radon' or 'HT'
 			file.write(f'\n nbr critical points (cla,ord): {n_crit_pts[_]}\n')
 			file.write(f'result so far:\n{result}\n')
 			file.close()
-		with open(path_to_savings+'-total-logs.txt', 'r') as file:
-			line = file.readline().split()
-			total_ext += np.array([float(line[0]), int(line[1])])
-		os.remove(path_to_savings + '-total-logs.txt')
+		# with open(path_to_savings+'-total-logs.txt', 'r') as file:
+		# 	line = file.readline().split()
+		# 	total_ext += np.array([float(line[0]), int(line[1])])
+		# os.remove(path_to_savings + '-total-logs.txt')
 	np.savez(path_to_savings, result=result, n_crit_pts=n_crit_pts, total_ext=total_ext)
 	print('Results saved in:', path_to_savings)
 
 #%%
-main('HT')
-main('ECT')
-main('Radon')
+main('HT', range_val=2)
+main('ECT', range_val=2)
+main('Radon', range_val=2)
+
+# %%
