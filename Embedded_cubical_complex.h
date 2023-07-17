@@ -749,9 +749,11 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
 
             int index = get_vector_index(direction);
             if(cla_crit_pts[index].size() == 0){
-                std::vector<double> tmp;
-                tmp.push_back(0);
-                Euler_caracteristic_transform ect(tmp, tmp);
+                std::vector<double> t;
+                t.push_back(-std::numeric_limits<double>::infinity());
+                std::vector<double> v;
+                v.push_back(0);
+                Euler_caracteristic_transform ect(t, v);
                 return ect;
             }
             
@@ -766,8 +768,11 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
 
             std::vector<double> sorted_scalar_products;
             std::vector<double> euler_car_accumulator;
+            sorted_scalar_products.push_back(-std::numeric_limits<double>::infinity());
             sorted_scalar_products.push_back(scalar_pdt[indices[0]]);
-            euler_car_accumulator.push_back(cla_crit_val[index][indices[0]]);       
+            euler_car_accumulator.push_back(0);
+            euler_car_accumulator.push_back(cla_crit_val[index][indices[0]]);    
+
             for(int i=1; i<(int)indices.size(); i++){
                 if(std::abs(scalar_pdt[indices[i-1]] - scalar_pdt[indices[i]]) <= std::numeric_limits<double>::epsilon()){
                     euler_car_accumulator[euler_car_accumulator.size()-1] += cla_crit_val[index][indices[i]];

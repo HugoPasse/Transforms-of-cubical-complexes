@@ -1,3 +1,6 @@
+#include <iostream>
+#include <stdexcept>
+
 #ifndef EULER_CARACTERISTIC_TRANSFORM_H_
 #define EULER_CARACTERISTIC_TRANSFORM_H_
 
@@ -13,7 +16,7 @@ public:
 	}
 
 	// pareil
-	std::size_t dichotomie(std::vector<double> table, double t, std::size_t begin, std::size_t end){
+	std::size_t dichotomie(std::vector<double>& table, double t, std::size_t begin, std::size_t end){
         if(end - begin <= 1){
             return begin;
         }else{
@@ -27,13 +30,46 @@ public:
     }
 
 	double evaluate(double t){
-		if(T[0] > t){
-			return 0;
-		}else if(T[T.size()-1] < t){
+		if(T[T.size()-1] < t){
 			return transform_values[transform_values.size()-1];
 		}else{
 			return transform_values[dichotomie(T, t, 0, T.size())];
 		}
+	}
+
+	std::vector<double> vectorize(double a, double b, int n){
+		if(b <= a){
+			std::cout << "[" << a << ";" << b << "] is not a valid interval" << std::endl;
+			throw std::invalid_argument("Invalid interval");
+		}
+		if(n <= 0){
+			std::cout << "Cannot vectorize for " << n << " points" << std::endl;
+			throw std::invalid_argument("Invalid number of points");
+		}
+		std::vector<double> res;
+		if(n==1){
+			res.push_back(evaluate(a));
+			return res;
+		}
+
+		double step = (b-a) / (n-1);
+ 		int tid = 0;
+		int i = 0;
+		while(i<n){
+			double t = a + step*i;
+			if(tid < (int)T.size()-1){
+				if(T[tid+1] > t){
+					res.push_back(transform_values[tid]);
+					i++;
+				}else{
+					tid++;
+				}
+			}else{
+				res.push_back(transform_values[tid]);
+				i++;
+			}
+		}
+		return res;
 	}
 
 	std::vector<std::vector<double>> get_attributes(){

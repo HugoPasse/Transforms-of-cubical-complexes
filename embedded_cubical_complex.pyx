@@ -16,6 +16,7 @@ cdef extern from "Euler_caracteristic_transform.h":
     cdef cppclass ECT_base "Euler_caracteristic_transform":
         ECT_base(vector[double] T, vector[double] sorted_transform_values) nogil
         double evaluate(double t) nogil
+        vector[double] vectorize(double a, double b, int n) nogil
         vector[vector[double]] get_attributes() nogil
 
 cdef extern from "Embedded_cubical_complex_interface.h" namespace "Gudhi":
@@ -80,6 +81,9 @@ cdef class EulerCaracteristicTransform:
 
     def evaluate(self, t):
         return self.this_ptr.evaluate(t)
+
+    def vectorize(self, a, b, n):
+        return self.this_ptr.vectorize(a,b,n)
 
     def get_attributes(self):
         return self.this_ptr.get_attributes()
