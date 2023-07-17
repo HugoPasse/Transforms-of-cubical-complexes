@@ -48,39 +48,44 @@ def main(expe=0, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
 
 	# Experiment 3,4: dimension
 	if expe==3:
-		sizes = [292]
+		# sizes = [5]
+		sizes = [159]
 		n_dir = 100
 		dim = 3
-		spacings = [14]
+		spacings = [1]
+		# spacings = [size//20]
 		n_samples = 10
-		dual = 1
+		dual = 0
 		title = 'our-dim-3-' + transform + '-n_dir-' + str(n_dir) + 'n-samples-' + str(n_samples) + '-dual-' + str(dual) + '-dim-' + str(dim)
 	
 	if expe==4:
-		sizes = [70]
+		# sizes = [3]
+		sizes = [44]
 		n_dir = 100 
 		dim = 4
-		spacings = [3]
+		spacings = [1]
+		# spacings = [2]
 		n_samples = 10
-		dual = 1
+		dual = 0
 		title = 'our-dim-4-' + transform + '-n_dir-' + str(n_dir) + 'n-samples-' + str(n_samples) + '-dual-' + str(dual) + '-dim-' + str(dim)
 
 	if expe==5:
-		sizes = [30]
+		# sizes = [2]
+		sizes = [20]
 		n_dir = 100 
 		dim = 5
 		spacings = [1]
 		n_samples = 10
-		dual = 1
+		dual = 0
 		title = 'our-dim-5-' + transform + '-n_dir-' + str(n_dir) + 'n-samples-' + str(n_samples) + '-dual-' + str(dual) + '-dim-' + str(dim)
 	
 	if expe==6:
-		sizes = [17]
+		sizes = [12]
 		n_dir = 100 
 		dim = 6
 		spacings = [1]
 		n_samples = 10
-		dual = 1
+		dual = 0
 		title = 'our-dim-6-' + transform + '-n_dir-' + str(n_dir) + 'n-samples-' + str(n_samples) + '-dual-' + str(dual) + '-dim-' + str(dim)
 	
 	# Experiment 7: size dim 3
@@ -133,7 +138,8 @@ def main(expe=0, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
 			size = sizes[min(len(sizes)-1,i)]
 			spacing = spacings[min(len(spacings)-1,i)]
 			print(f'sample = {_} | size = {size} | spacing = {spacing}')
-			cmd = '/usr/bin/time --output=' + path_to_savings + '-total-logs.txt -f "%U %M" python3 subprocess_mem.py ' +  str(size) + ' ' + str(spacing) + ' ' + str(n_dir) + ' ' + str(dual) + ' ' + str(dim) + ' ' + path_to_savings + ' ' + transform
+			cmd = 'python3 subprocess_mem.py ' +  str(size) + ' ' + str(spacing) + ' ' + str(n_dir) + ' ' + str(dual) + ' ' + str(dim) + ' ' + path_to_savings + ' ' + transform
+			# cmd = '/usr/bin/time --output=' + path_to_savings + '-total-logs.txt -f "%U %M" python3 subprocess_mem.py ' +  str(size) + ' ' + str(spacing) + ' ' + str(n_dir) + ' ' + str(dual) + ' ' + str(dim) + ' ' + path_to_savings + ' ' + transform
 			output = subprocess.check_output(cmd, shell=True)
 			temp_res = [float(_.decode()) for _ in output.split()]
 			result[_,i] = np.array([(temp_res[2*_],temp_res[2*_+1]) for _ in range(4)]+[(sum(temp_res[2*_] for _ in range(4)), sum(temp_res[2*_+1] for _ in range(4)))])
@@ -142,10 +148,10 @@ def main(expe=0, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
 				file.write(f'\n nbr critical points (cla,ord): {n_crit_pts[_,i]}\n')
 				file.write(f'result:\n{result[_,i]}\n')
 				file.close()
-			with open(path_to_savings+'-total-logs.txt', 'r') as file:
-				line = file.readline().split()
-				total_ext[_,i] = np.array([float(line[0]), int(line[1])])
-	os.remove(path_to_savings + '-total-logs.txt')
+			# with open(path_to_savings+'-total-logs.txt', 'r') as file:
+			# 	line = file.readline().split()
+			# 	total_ext[_,i] = np.array([float(line[0]), int(line[1])])
+	# os.remove(path_to_savings + '-total-logs.txt')
 	np.savez(path_to_savings, result=result, n_crit_pts=n_crit_pts, total_ext=total_ext)
 	print('Results saved in:', path_to_savings)
 
@@ -162,5 +168,9 @@ def main(expe=0, transform='HT'): # transform = 'ECT' or 'Radon' or 'HT'
 # 	main(6,transform)
 
 #%%
-for transform in ['HT', 'Radon', 'ECT']:
-	main(2,transform)
+# for transform in ['HT', 'Radon', 'ECT']:
+# 	main(2,transform)
+
+# main(3,'ECT')
+main(4,'ECT')
+# %%
