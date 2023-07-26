@@ -66,6 +66,10 @@ cdef class RadonTransform:
     def get_attributes(self):
         return self.this_ptr.get_attributes()
 
+    def __dealloc__(self):
+        if self.this_ptr != NULL:
+            del self.this_ptr
+
 cdef class EulerCaracteristicTransform:
     cdef ECT_base * this_ptr
 
@@ -87,6 +91,10 @@ cdef class EulerCaracteristicTransform:
 
     def get_attributes(self):
         return self.this_ptr.get_attributes()
+
+    def __dealloc__(self):
+        if self.this_ptr != NULL:
+            del self.this_ptr
 
 cdef class EmbeddedComplex:
 

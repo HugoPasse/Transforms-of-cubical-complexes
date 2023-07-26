@@ -742,7 +742,6 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
         }
 
         Euler_caracteristic_transform compute_ect(std::vector<double> &direction){
-            // To adapt
             if(are_cla_crit_pts_computed == 0){
                 compute_classical_critical_vertices();
             }
