@@ -811,6 +811,13 @@ class Embedded_cubical_complex : public Gudhi::cubical_complex::Bitmap_cubical_c
         }
 
         std::vector<double> get_vertex_coordinates(int index){
+            if(index >= (int)embedding_index.size()){
+                std::cout << "Simplex " << index << " does not exists\n";
+                throw std::invalid_argument("Not a vertex");
+            }else if(embedding_index[index]  == -1){
+                std::cout << "Simplex " << index << " is not a vertex\n";
+                throw std::invalid_argument("Not a vertex");
+            }
             return embedding[embedding_index[index]];
         }
 

@@ -46,6 +46,7 @@ cdef extern from "Embedded_cubical_complex_interface.h" namespace "Gudhi":
         
         void print_filtration() nogil
         void print_embedding() nogil
+        vector[double] get_vertex_embedding() nogil
 
 cdef class RadonTransform:
     cdef Radon_transform_base * this_ptr
@@ -210,6 +211,9 @@ cdef class EmbeddedComplex:
                 index += i
             i *= 2
         return index
+
+    def get_vertex_embedding(self,int vertex):
+        return self.this_ptr.get_vertex_coordinates(vertex)
 
     def print_filtration(self):
         self.this_ptr.print_filtration()
