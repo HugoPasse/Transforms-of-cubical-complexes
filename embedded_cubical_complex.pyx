@@ -165,12 +165,12 @@ cdef class EmbeddedComplex:
                 d = directions[k]
                 S = 0
                 index = self.get_vector_index(d)
-                crit = self.get_critical_vertices(index)
-                mult = self.get_critical_multiplicity(index)
+                crit = self.get_ordinary_critical_vertices(index)
+                mult = self.get_ordinary_critical_values(index)
                 for i in range(len(crit)):
                     v = crit[i]
                     m = mult[i]
-                    S += m * kernel(np.dot(self.get_coordinates(v),d))
+                    S -= m * kernel(np.dot(self.get_coordinates(v),d))
                 R[k] = S
             return R
 
