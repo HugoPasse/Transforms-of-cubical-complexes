@@ -81,3 +81,11 @@ print('T values   :',end='')
 print(["{0:0.3f}".format(i) for i in attributes[0]])
 print('ECT values :',end='')
 print(["{0:0.3f}".format(i) for i in attributes[1]])
+
+print('\n---------------------------------------------')
+print('Evaluating :')
+t = -0.3
+index = np.searchsorted(attributes[0],t,side='right')-1
+print('t =',t)
+print('i =',index)
+print('ECT(' + str(direction) + ', ' + str(t) + ') =', attributes[1][index])
